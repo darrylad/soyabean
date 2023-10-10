@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:path_provider/path_provider.dart';
 // import 'package:soyabean/actions_page.dart';
 // import 'dart:io';
 // import 'package:provider/provider.dart';
@@ -38,7 +41,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     // Instantiating the camera controller
     final CameraController cameraController = CameraController(
       cameraDescription,
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
 
@@ -62,6 +65,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       await cameraController.initialize();
     } on CameraException catch (e) {
       debugPrint('Error initializing camera: $e');
+      _showTextAlert('Error initializing camera: $e');
     }
 
     // Update the Boolean
@@ -105,21 +109,172 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     }
   }
 
+  Future<XFile?> takePicture() async {
+    final CameraController? cameraController = controller;
+    if (cameraController!.value.isTakingPicture) {
+      // A capture is already pending, do nothing.
+      return null;
+    }
+    try {
+      XFile file = await cameraController.takePicture();
+      return file;
+    } on CameraException catch (e) {
+      debugPrint('Error occured while taking picture: $e');
+      _showTextAlert('Error occured while taking picture: $e');
+      return null;
+    }
+  }
+
+  void _showImageDialog(image) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Padding(
+            padding: const EdgeInsets.fromLTRB(1.0, 10, 1.0, 10),
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                image: DecorationImage(
+                  image: FileImage(image!),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              Expanded(
+                child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                          Theme.of(context).colorScheme.primary),
+                      foregroundColor: MaterialStateProperty.all<Color>(
+                          Theme.of(context).colorScheme.onPrimary),
+                      elevation: MaterialStateProperty.all<double>(4),
+                    ),
+                    onPressed: () {},
+                    child: const Text('Upload')),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+              ),
+            ]),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showTextAlert(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Alert"),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the alert dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: colorScheme.surfaceVariant,
+      backgroundColor: colorScheme.onBackground,
       appBar: AppBar(
-        title: const Text('Camera Preview'),
+        backgroundColor: colorScheme.onBackground,
+        title: Text('Camera Preview',
+            style: TextStyle(color: colorScheme.surface)),
         centerTitle: true,
       ),
       body: _isCameraInitialized
-          ? AspectRatio(
-              aspectRatio: 1 / controller!.value.aspectRatio,
-              child: controller!.buildPreview(),
+          ? Center(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      clipBehavior: Clip.hardEdge,
+                      // color: colorScheme.surface,
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      // child: AspectRatio(
+                      //   aspectRatio: 1 / controller!.value.aspectRatio,
+                      //   child: controller!.buildPreview(),
+                      // ),
+                      child: controller!.buildPreview(),
+                    ),
+                  ),
+                  // const SafeArea(
+                  //   child: SizedBox(
+                  //     height: 5,
+                  //   ),
+                  // ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      photoShutterButton(colorScheme),
+                      // videoRecordButton(),
+                      // cameraFlipButton(),
+                    ],
+                  ),
+                  // const SizedBox(
+                  //   height: 5,
+                  // )
+                ],
+              ),
             )
           : Container(),
+    );
+  }
+
+  IconButton photoShutterButton(
+    colorScheme,
+  ) {
+    return IconButton(
+      icon: const Icon(
+        Icons.camera_rounded,
+        size: 75,
+      ),
+      color: colorScheme.surface,
+      onPressed: () async {
+        XFile? rawImage = await takePicture();
+        File imageFile = File(rawImage!.path);
+
+        int currentUnix = DateTime.now().millisecondsSinceEpoch;
+        final directory = await getApplicationDocumentsDirectory();
+        String fileFormat = imageFile.path.split('.').last;
+
+        await imageFile.copy(
+          '${directory.path}/$currentUnix.$fileFormat',
+        );
+
+        final pickedImage = rawImage;
+        File? image;
+        setState(() {
+          image = File(pickedImage.path);
+        });
+        _showImageDialog(image);
+      },
     );
   }
 }
