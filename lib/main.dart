@@ -1,6 +1,8 @@
 // import 'dart:io'; // pick this
+import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+// import 'package:after_layout/after_layout.dart';
 // import 'package:provider/provider.dart';
 // import 'package:image_picker/image_picker.dart'; // pick this
 // import 'package:camera/camera.dart'; // pick this
@@ -50,10 +52,63 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: HomePage(showWelcomePage: showWelcomePage),
+      // home: HomePage(showWelcomePage: showWelcomePage),
+      home: const Splash(),
       // home: MaterialApp.router(
       //   routerConfig: routes,
       // ),
+    );
+  }
+}
+
+class Splash extends StatefulWidget {
+  const Splash({super.key});
+
+  @override
+  State<Splash> createState() => _SplashState();
+}
+
+class _SplashState extends State<Splash> {
+  final splashDelay = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    loadWelcomePageState();
+    // _loadWidget();
+  }
+
+  // _loadWidget() async {
+  //   var duration = Duration(seconds: splashDelay);
+  //   return Timer(duration, loadWelcomePageState);
+  // }
+
+  Future<void> loadWelcomePageState() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // setState(() {
+    //   bool showWelcomePage = prefs.getBool('showWelcomePage') ?? true;
+    // });
+    bool showWelcomePage = prefs.getBool('showWelcomePage') ?? true;
+
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (showWelcomePage) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const WelcomePage()));
+    } else if (showWelcomePage == false) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const HomePage(showWelcomePage: false)));
+    }
+  }
+
+  // @override
+  void afterFirstLayout(BuildContext context) => loadWelcomePageState();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }
