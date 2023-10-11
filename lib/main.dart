@@ -90,7 +90,7 @@ class _SplashState extends State<Splash> {
     // });
     bool showWelcomePage = prefs.getBool('showWelcomePage') ?? true;
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 250));
     if (showWelcomePage) {
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const WelcomePage()));

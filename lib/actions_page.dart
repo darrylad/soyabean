@@ -4,6 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:soyabean/camera_page.dart';
+import 'package:soyabean/description_page.dart';
 // import 'package:soyabean/main.dart';
 // import 'package:soyabean/main.dart';
 
@@ -95,8 +96,48 @@ class _ActionsState extends State<ActionsPage> {
     }
   }
 
+  final TextEditingController _textFieldController = TextEditingController();
+
+  Future<void> _displayTextInputDialog(
+      BuildContext context, File? image) async {
+    var colorScheme = Theme.of(context).colorScheme;
+    return showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Enter Server URL',
+                style: TextStyle(color: colorScheme.onSurfaceVariant)),
+            content: TextField(
+              onChanged: (value) {},
+              controller: _textFieldController,
+              decoration: const InputDecoration(
+                  hintText: "http://your-matlab-server-ip:3000"),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('CANCEL'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DescriptionPage(image: image)));
+                },
+                child: const Text('UPLOAD'),
+              ),
+            ],
+          );
+        });
+  }
+
   void _showImageDialog() {
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -125,8 +166,10 @@ class _ActionsState extends State<ActionsPage> {
                           Theme.of(context).colorScheme.onPrimary),
                       elevation: MaterialStateProperty.all<double>(4),
                     ),
-                    onPressed: () {},
-                    child: const Text('Upload')),
+                    onPressed: () {
+                      _displayTextInputDialog(context, _image);
+                    },
+                    child: const Text('Proceed')),
               ),
               const SizedBox(width: 18),
               Expanded(

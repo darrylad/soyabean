@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:soyabean/description_page.dart';
 // import 'package:soyabean/actions_page.dart';
 // import 'dart:io';
 // import 'package:provider/provider.dart';
@@ -87,6 +88,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   void dispose() {
     controller?.dispose();
     super.dispose();
+    _isCapturing = false;
   }
 
   @override
@@ -109,6 +111,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     }
   }
 
+  bool _isCapturing = false;
+
   Future<XFile?> takePicture() async {
     final CameraController? cameraController = controller;
     if (cameraController!.value.isTakingPicture) {
@@ -125,8 +129,50 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     }
   }
 
+  final TextEditingController _textFieldController = TextEditingController();
+
+  Future<void> _displayTextInputDialog(BuildContext context, image) async {
+    var colorScheme = Theme.of(context).colorScheme;
+    return showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(
+              'Enter Server URL',
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+            ),
+            content: TextField(
+              onChanged: (value) {},
+              controller: _textFieldController,
+              decoration: const InputDecoration(
+                  hintText: "http://your-matlab-server-ip:3000"),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('CANCEL'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // code for https request
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DescriptionPage(image: image)));
+                },
+                child: const Text('UPLOAD'),
+              ),
+            ],
+          );
+        });
+  }
+
   void _showImageDialog(image) {
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -155,8 +201,10 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                           Theme.of(context).colorScheme.onPrimary),
                       elevation: MaterialStateProperty.all<double>(4),
                     ),
-                    onPressed: () {},
-                    child: const Text('Upload')),
+                    onPressed: () {
+                      _displayTextInputDialog(context, image);
+                    },
+                    child: const Text('Proceed')),
               ),
               const SizedBox(width: 18),
               Expanded(
@@ -176,6 +224,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
 
   void _showTextAlert(String message) {
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -200,6 +249,9 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     return Scaffold(
       backgroundColor: colorScheme.onBackground,
       appBar: AppBar(
+        iconTheme:
+            IconThemeData(color: colorScheme.surface //change your color here
+                ),
         backgroundColor: colorScheme.onBackground,
         title: Text('Camera Preview',
             style: TextStyle(color: colorScheme.surface)),
@@ -229,13 +281,42 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   //     height: 5,
                   //   ),
                   // ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      photoShutterButton(colorScheme),
-                      // videoRecordButton(),
-                      // cameraFlipButton(),
-                    ],
+                  SizedBox(
+                    height: 100,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Expanded(child: SizedBox()),
+                        Expanded(
+                          child:
+                              // _isCapturing
+                              //     ? Center(
+                              //         child: CircularProgressIndicator(
+                              //           color: colorScheme.surfaceVariant,
+                              //         ),
+                              //       )
+                              //     :
+                              AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Center(
+                                      child: photoShutterButton(colorScheme))),
+                        ),
+                        Expanded(
+                            child: AnimatedSwitcher(
+                          duration: const Duration(seconds: 1),
+                          child: _isCapturing
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                  color: colorScheme.surface,
+                                ))
+                              : const SizedBox(),
+                        )
+                            // child: const SizedBox(),
+                            ),
+                        // videoRecordButton(),
+                        // cameraFlipButton(),
+                      ],
+                    ),
                   ),
                   // const SizedBox(
                   //   height: 5,
@@ -255,43 +336,38 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
         Icons.camera_rounded,
         size: 75,
       ),
-      color: colorScheme.surface,
-      onPressed: () async {
-        XFile? rawImage = await takePicture();
-        File imageFile = File(rawImage!.path);
+      color: _isCapturing
+          ? colorScheme.surface.withAlpha(150)
+          : colorScheme.surface,
+      onPressed: (_isCapturing)
+          ? () {}
+          : () async {
+              // checkIfCapturing();
+              setState(() {
+                _isCapturing = true;
+              });
+              XFile? rawImage = await takePicture();
+              File imageFile = File(rawImage!.path);
 
-        int currentUnix = DateTime.now().millisecondsSinceEpoch;
-        final directory = await getApplicationDocumentsDirectory();
-        String fileFormat = imageFile.path.split('.').last;
+              int currentUnix = DateTime.now().millisecondsSinceEpoch;
+              final directory = await getApplicationDocumentsDirectory();
+              String fileFormat = imageFile.path.split('.').last;
 
-        await imageFile.copy(
-          '${directory.path}/$currentUnix.$fileFormat',
-        );
+              await imageFile.copy(
+                '${directory.path}/$currentUnix.$fileFormat',
+              );
 
-        final pickedImage = rawImage;
-        File? image;
-        setState(() {
-          image = File(pickedImage.path);
-        });
-        _showImageDialog(image);
-      },
+              final pickedImage = rawImage;
+              File? image;
+              setState(() {
+                image = File(pickedImage.path);
+                _isCapturing = false;
+              });
+              _showImageDialog(image);
+            },
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // class _ActionsState extends State<Actions> {
 //   File? _image;
