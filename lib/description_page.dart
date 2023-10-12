@@ -11,6 +11,7 @@ class DescriptionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
+    String status = 'Preparing...';
     return Scaffold(
         backgroundColor: colorScheme.background,
         appBar: AppBar(
@@ -31,6 +32,8 @@ class DescriptionPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Image.file(image!),
+                  const SizedBox(height: 60),
+                  Text('Status: $status'),
                 ]),
           ),
         ));

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:soyabean/camera_page.dart';
 import 'package:soyabean/description_page.dart';
@@ -190,11 +191,29 @@ class _ActionsState extends State<ActionsPage> {
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
-
+    var brightness = Theme.of(context).brightness;
     return Scaffold(
-      backgroundColor: colorScheme.surfaceVariant,
+      backgroundColor: (brightness == Brightness.light)
+          ? colorScheme.surfaceVariant
+          : colorScheme.background,
       appBar: AppBar(
-        backgroundColor: colorScheme.surfaceVariant,
+        systemOverlayStyle: SystemUiOverlayStyle(
+          systemNavigationBarIconBrightness: (brightness == Brightness.light)
+              ? Brightness.dark
+              : Brightness.light,
+          systemNavigationBarColor: (brightness == Brightness.light)
+              ? colorScheme.background
+              : colorScheme.surfaceVariant, // Navigation bar
+          statusBarColor: (brightness == Brightness.light)
+              ? colorScheme.surfaceVariant
+              : colorScheme.background,
+          statusBarIconBrightness: (brightness == Brightness.light)
+              ? Brightness.dark
+              : Brightness.light,
+        ),
+        backgroundColor: (brightness == Brightness.light)
+            ? colorScheme.surfaceVariant
+            : colorScheme.background,
         title: Text('Soyabean',
             style: TextStyle(
                 color: colorScheme.onSurfaceVariant,

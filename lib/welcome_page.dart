@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // import 'package:soyabean/actions_page.dart';
 import 'package:soyabean/main.dart';
+
+bool showWelcomePage = true;
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -13,7 +16,7 @@ class WelcomePage extends StatefulWidget {
 
 class _WelcomePageState extends State<WelcomePage> {
   // final Function(int) onIndexChanged;
-  bool showWelcomePage = true;
+  // bool showWelcomePage = true;
 
   @override
   void initState() {
@@ -40,6 +43,13 @@ class _WelcomePageState extends State<WelcomePage> {
     return Scaffold(
       backgroundColor: colorScheme.surfaceVariant,
       appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle(
+          systemNavigationBarIconBrightness: Brightness.dark,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor:
+              colorScheme.surfaceVariant, // Navigation bar
+          statusBarColor: colorScheme.surfaceVariant,
+        ),
         backgroundColor: colorScheme.surfaceVariant,
         title: Text('Soyabean',
             style: TextStyle(
@@ -64,7 +74,7 @@ class _WelcomePageState extends State<WelcomePage> {
               Padding(
                 padding: const EdgeInsets.all(30),
                 child: Text(
-                  'Nostrud excepteur ea eu elit dolore amet consectetur Ut Lorem fugiat sunt nulla reprehenderit commodo duis nisi reprehenderit esse amet. Ea dolor labore consectetur commodo non deserunt voluptate sunt. Officia consequat et cupidatat amet. \n \nVoluptate sint eiusmod ex dolore aliquip adipisicing nostrud ea sit. Consectetur dolore dolor id ad aliqua do non dolore aliqua. Anim quis pariatur ut aute pariatur consequat laborum ea mollit cillum.',
+                  'Nostrud excepteur ea eu elit dolore amet consectetur Ut Lorem fugiat sunt nulla reprehenderit commodo duis nisi reprehenderit esse amet. Ea dolor labore consectetur commodo non deserunt voluptate sunt. Officia consequat et cupidatat amet. \n \nVoluptate sint eiusmod ex dolore aliquip adipisicing nostrud ea sit. Consectetur dolore dolor id ad aliqua do non dolore aliqua. Anim quis pariatur ut aute pariatur consequat laborum ea mollit cillum. \n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
                   style: TextStyle(
                       color: colorScheme.onSurfaceVariant, fontSize: 15),
                 ),
@@ -85,7 +95,7 @@ class _WelcomePageState extends State<WelcomePage> {
                     onPressed: () {
                       // onIndexChanged(1);
                       // bool showWelcomePage = false;
-                      Navigator.push(
+                      Navigator.pushReplacement(
                           context,
                           // MaterialPageRoute(
                           //     builder: (context) => const HomePage(

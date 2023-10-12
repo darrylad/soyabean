@@ -13,3 +13,10 @@ October 11
 - added circularProgressIndicator() and disabled shutter button while capturing photo.
 - made barrierDismissible false for app showDialog() boxes.
 - development of DescriptionPage started.
+
+October 12
+
+- Implement File_picker() for non android and ios platforms. pending.
+- changed welcome page continue navigator to pushReplacement.
+- implemented dynamic_color() for dynamic theming based on material 3.
+- spent hours figuring out how to find android version when the app starts to set material you dynamic colors as default.

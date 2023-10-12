@@ -246,15 +246,25 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
+    var brightness = Theme.of(context).brightness;
     return Scaffold(
-      backgroundColor: colorScheme.onBackground,
+      backgroundColor: (brightness == Brightness.light)
+          ? colorScheme.onBackground
+          : colorScheme.background,
       appBar: AppBar(
-        iconTheme:
-            IconThemeData(color: colorScheme.surface //change your color here
-                ),
-        backgroundColor: colorScheme.onBackground,
+        iconTheme: IconThemeData(
+            color: (brightness == Brightness.light)
+                ? colorScheme.surface
+                : colorScheme.onSurfaceVariant //change your color here
+            ),
+        backgroundColor: (brightness == Brightness.light)
+            ? colorScheme.onBackground
+            : colorScheme.background,
         title: Text('Camera Preview',
-            style: TextStyle(color: colorScheme.surface)),
+            style: TextStyle(
+                color: (brightness == Brightness.light)
+                    ? colorScheme.surface
+                    : colorScheme.onSurfaceVariant)),
         centerTitle: true,
       ),
       body: _isCameraInitialized
@@ -299,7 +309,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                               AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 200),
                                   child: Center(
-                                      child: photoShutterButton(colorScheme))),
+                                      child: photoShutterButton(
+                                          colorScheme, brightness))),
                         ),
                         Expanded(
                             child: AnimatedSwitcher(
@@ -307,7 +318,9 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                           child: _isCapturing
                               ? Center(
                                   child: CircularProgressIndicator(
-                                  color: colorScheme.surface,
+                                  color: (brightness == Brightness.light)
+                                      ? colorScheme.surface
+                                      : colorScheme.onBackground,
                                 ))
                               : const SizedBox(),
                         )
@@ -324,23 +337,34 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                 ],
               ),
             )
-          : Container(),
+          : Center(
+              // when camera is not initialized
+              child: CircularProgressIndicator(
+              color: colorScheme.surface,
+            )),
     );
   }
 
   IconButton photoShutterButton(
     colorScheme,
+    Brightness brightness,
   ) {
     return IconButton(
       icon: const Icon(
         Icons.camera_rounded,
         size: 75,
       ),
-      color: _isCapturing
-          ? colorScheme.surface.withAlpha(150)
-          : colorScheme.surface,
+      color: (brightness == Brightness.light)
+          ? (_isCapturing
+              ? colorScheme.surface.withAlpha(150)
+              : colorScheme.surface)
+          : (_isCapturing
+              ? colorScheme.onSurfaceVariant.withAlpha(150)
+              : colorScheme.onBackground),
       onPressed: (_isCapturing)
-          ? () {}
+          ? () {
+              // do nothing, to disable the button when caputring
+            }
           : () async {
               // checkIfCapturing();
               setState(() {
