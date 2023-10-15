@@ -40,21 +40,36 @@ class _WelcomePageState extends State<WelcomePage> {
   Widget build(BuildContext context) {
     // var appState = context.watch<MyAppState>();
     var colorScheme = Theme.of(context).colorScheme;
+    var brightness = Theme.of(context).brightness;
     return Scaffold(
-      backgroundColor: colorScheme.surfaceVariant,
+      backgroundColor: (brightness == Brightness.light)
+          ? colorScheme.surfaceVariant
+          : colorScheme.onPrimary,
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle(
-          systemNavigationBarIconBrightness: Brightness.dark,
-          statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor:
-              colorScheme.surfaceVariant, // Navigation bar
-          statusBarColor: colorScheme.surfaceVariant,
+          systemNavigationBarIconBrightness: (brightness == Brightness.light)
+              ? Brightness.dark
+              : Brightness.light,
+          statusBarIconBrightness: (brightness == Brightness.light)
+              ? Brightness.dark
+              : Brightness.light,
+          systemNavigationBarColor: (brightness == Brightness.light)
+              ? colorScheme.surfaceVariant
+              : colorScheme.onPrimary, // Navigation bar
+          statusBarColor: Colors.transparent,
         ),
-        backgroundColor: colorScheme.surfaceVariant,
-        title: Text('Soyabean',
-            style: TextStyle(
-                color: colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600)),
+        backgroundColor: (brightness == Brightness.light)
+            ? colorScheme.surfaceVariant
+            : colorScheme.onPrimary,
+        title: (isDemoModeOn)
+            ? Text('Soyabean Demo',
+                style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600))
+            : Text('Soyabean',
+                style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
       body: Center(
@@ -74,16 +89,17 @@ class _WelcomePageState extends State<WelcomePage> {
               Padding(
                 padding: const EdgeInsets.all(30),
                 child: Text(
-                  'Nostrud excepteur ea eu elit dolore amet consectetur Ut Lorem fugiat sunt nulla reprehenderit commodo duis nisi reprehenderit esse amet. Ea dolor labore consectetur commodo non deserunt voluptate sunt. Officia consequat et cupidatat amet. \n \nVoluptate sint eiusmod ex dolore aliquip adipisicing nostrud ea sit. Consectetur dolore dolor id ad aliqua do non dolore aliqua. Anim quis pariatur ut aute pariatur consequat laborum ea mollit cillum. \n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
+                  // 'Nostrud excepteur ea eu elit dolore amet consectetur Ut Lorem fugiat sunt nulla reprehenderit commodo duis nisi reprehenderit esse amet. Ea dolor labore consectetur commodo non deserunt voluptate sunt. Officia consequat et cupidatat amet. \n \nVoluptate sint eiusmod ex dolore aliquip adipisicing nostrud ea sit. Consectetur dolore dolor id ad aliqua do non dolore aliqua. Anim quis pariatur ut aute pariatur consequat laborum ea mollit cillum. \n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
+                  'Welcome to our AI-powered plant identifier app! Easily classify plant types by uploading images from your gallery or capturing them with your camera. Our powerful AI server analyzes the images for quick and accurate identification, making plant discovery a breeze.\n \nTurn your smartphone into a portable plant encyclopedia with our innovative software. Whether you\'re a seasoned botanist or a nature enthusiast, our app allows you to effortlessly identify and learn about various plant species while exploring the outdoors or tending to your garden. Experience the convenience of on-the-go plant identification with our cutting-edge AI mode. Uncover the mysteries of the botanical world and explore the beauty of the natural realm like never before \n',
                   style: TextStyle(
                       color: colorScheme.onSurfaceVariant, fontSize: 15),
                 ),
               ),
-              const SizedBox(height: 25),
+              // const SizedBox(height: 10),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(width: 10),
+                  // const SizedBox(width: 10),
                   FilledButton(
                     style: ButtonStyle(
                       backgroundColor:
@@ -142,6 +158,8 @@ class _WelcomePageState extends State<WelcomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Checkbox(
+                      side: BorderSide(
+                          width: 1.2, color: colorScheme.onSurfaceVariant),
                       value: !(showWelcomePage),
                       onChanged: (value) {
                         setState(() {
@@ -155,7 +173,7 @@ class _WelcomePageState extends State<WelcomePage> {
                     'Don\'t show this screen again',
                     style: TextStyle(
                         color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600),
+                        fontWeight: FontWeight.w400),
                   ),
                 ],
               ),

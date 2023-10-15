@@ -1,46 +1,36 @@
-// import 'package:dynamic_color/dynamic_color.dart';
 import 'dart:io' show Platform;
 // import 'dart:convert';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:soyabean/about_page.dart';
+import 'package:soyabean/actions_page.dart';
 import 'package:soyabean/main.dart';
+import 'package:soyabean/url_text_input_dialog.dart';
 import 'package:soyabean/welcome_page.dart';
-// import 'package:fluttertoast/fluttertoast.dart';
-
-// void loadThemePreference() async {
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-//   isDynamicColoringEnabled = prefs.getBool('isDynamicColoringEnabled') ?? false;
-// }
-
-// bool _isDynamicColoringEnabled = isDynamicColoringEnabled;
 
 class DynamicThemeProvider with ChangeNotifier {
   // bool _isDynamicColoringEnabled =
   //     isFirstTime ? isDynamicColorsSupported() : isDynamicColoringEnabled;
-  bool _isDynamicColoringEnabled = meow;
 
+  bool _isDynamicColoringEnabled = meow;
   bool get isDynamicColoringEnabled => _isDynamicColoringEnabled;
+
+  bool _isLightModeForced = isLightModeForced;
+  bool get isLightModeForcedVar => _isLightModeForced;
+
+  void toggleLightMode(bool isLightModeForcedVar) {
+    _isLightModeForced = isLightModeForcedVar;
+    notifyListeners();
+  }
 
   void toggleTheme(bool isDynamicColoringEnabled) {
     _isDynamicColoringEnabled = isDynamicColoringEnabled;
     notifyListeners();
   }
 }
-
-// String androidVersion = "0";
-
-// Future<void> checkDynamicColorsSupport() async {
-//   if (Platform.isAndroid) {
-//     final androidVersion = await getAndroidVersion();
-//     if (int.parse(androidVersion) >= 12) {
-//       bool isDynamicColorsSupportedBool = true;
-//     } else if (int.parse(androidVersion) < 12) {
-//       bool isDynamicColorsSupportedBool = false;
-//     }
-//   }
-// }
 
 bool isDynamicColorsSupported() {
   void saveThemePreference(bool isDynamicColoringEnabled) async {
@@ -68,18 +58,66 @@ bool isDynamicColorsSupported() {
       return false;
     }
   }
+  if (Platform.isMacOS) {
+    saveThemePreference(true);
+    return true;
+  }
+  if (Platform.isWindows) {
+    saveThemePreference(true);
+    return true;
+  }
   return false;
 }
 
-Future<String> getAndroidVersion() async {
-  final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+Future<String> getPlatformOS() async {
+  void savePlatformOS(String platformOS) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('platformOS', platformOS);
+  }
+
+  // final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
   if (Platform.isAndroid) {
+    // final deviceInfo = DeviceInfoPlugin();
+    // AndroidDeviceInfo androidInfo = await deviceInfoPlugin.androidInfo;
+    platformOS = 'Android';
+    savePlatformOS(platformOS);
+    return 'Android';
+  } else if (Platform.isIOS) {
+    // IosDeviceInfo iosInfo = await deviceInfoPlugin.iosInfo;
+    // return iosInfo.systemVersion;
+    platformOS = 'iOS';
+    savePlatformOS(platformOS);
+    return "iOS";
+  } else if (Platform.isMacOS) {
+    // MacOsDeviceInfo macosInfo = await deviceInfoPlugin.macOsInfo;
+    // return macosInfo.majorVersion;
+    platformOS = 'macOS';
+    savePlatformOS(platformOS);
+    return 'macOS';
+  } else if (Platform.isWindows) {
+    // WindowsDeviceInfo windowsInfo = await deviceInfoPlugin.windowsInfo;
+    // return windowsInfo.computerName;
+    platformOS = 'Windows';
+    savePlatformOS(platformOS);
+    return 'Windows';
+  } else if (Platform.isLinux) {
+    // LinuxDeviceInfo linuxInfo = await deviceInfoPlugin.linuxInfo;
+    platformOS = 'Linux';
+    savePlatformOS(platformOS);
+    return 'Linux';
+  }
+  return "Unknown";
+}
+
+Future<String> getAndroidVersion() async {
+  if (Platform.isAndroid) {
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     // final deviceInfo = DeviceInfoPlugin();
     AndroidDeviceInfo androidInfo = await deviceInfoPlugin.androidInfo;
     androidVersion = androidInfo.version.release;
     return androidVersion;
   }
-  return "1";
+  return "0";
   // return "Not Android";
 }
 
@@ -91,6 +129,7 @@ class OptionsPage extends StatefulWidget {
 }
 
 // bool showWelcomePage = true;
+bool useNestedScrollView = false;
 
 class _OptionsPageState extends State<OptionsPage> {
   bool isDynamicColoringEnabled = false;
@@ -101,6 +140,11 @@ class _OptionsPageState extends State<OptionsPage> {
     readIsDynamicColorsSupportedBool();
     // loadWelcomePageState();
     // loadThemePreference();
+  }
+
+  void saveIsLightModeForcedBoolValue(bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLightModeForced', value);
   }
 
   void saveWelcomePageState(bool value) async {
@@ -128,8 +172,8 @@ class _OptionsPageState extends State<OptionsPage> {
     setState(() {
       isDynamicColoringEnabled =
           prefs.getBool('isDynamicColoringEnabled') ?? false;
-      tester =
-          'valueVar: - , isDynamicColoringEnabled: $isDynamicColoringEnabled';
+      // tester =
+      //     'valueVar: - , isDynamicColoringEnabled: $isDynamicColoringEnabled';
     });
   }
 
@@ -137,6 +181,16 @@ class _OptionsPageState extends State<OptionsPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(
         'isDynamicColoringEnabled', isDynamicColoringEnabledVar);
+  }
+
+  void saveAskForUrlEverytime(bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('askForUrlEverytime', value);
+  }
+
+  void saveIsDemoModeOn(bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isDemoModeOn', value);
   }
 
   @override
@@ -148,26 +202,107 @@ class _OptionsPageState extends State<OptionsPage> {
     // return originalScaffold(colorScheme);
     return Consumer<DynamicThemeProvider>(
       builder: (context, themeProvider, child) {
-        return Scaffold(
+        // return originalScaffold(
+        //     brightness, colorScheme, isDynamicColoringSupported, themeProvider);
+
+        // return scaffoldUsingNestedScrollView(
+        //     brightness, colorScheme, isDynamicColoringSupported, themeProvider);
+
+        // return scaffoldUsingSliverChildListDelegate(
+        //     brightness, colorScheme, isDynamicColoringSupported, themeProvider);
+
+        //options
+        return useNestedScrollView
+            ? scaffoldUsingNestedScrollView(brightness, colorScheme,
+                isDynamicColoringSupported, themeProvider)
+            : scaffoldUsingSliverChildListDelegate(brightness, colorScheme,
+                isDynamicColoringSupported, themeProvider);
+      },
+    );
+  }
+
+  Scaffold scaffoldUsingSliverChildListDelegate(
+      Brightness brightness,
+      ColorScheme colorScheme,
+      bool isDynamicColoringSupported,
+      DynamicThemeProvider themeProvider) {
+    return Scaffold(
+      backgroundColor: (brightness == Brightness.light)
+          ? colorScheme.surfaceVariant
+          : colorScheme.background,
+      body: CustomScrollView(slivers: <Widget>[
+        SliverAppBar(
+          leading: null,
+          leadingWidth: null,
+          automaticallyImplyLeading: false,
+          // titlePadding: EdgeInsets.only(left: 24),
           backgroundColor: (brightness == Brightness.light)
               ? colorScheme.surfaceVariant
               : colorScheme.background,
-          appBar: AppBar(
-            backgroundColor: (brightness == Brightness.light)
-                ? colorScheme.surfaceVariant
-                : colorScheme.background,
-            title: const Text('Options'),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            systemNavigationBarIconBrightness: (brightness == Brightness.light)
+                ? Brightness.dark
+                : Brightness.light,
+            systemNavigationBarColor: (brightness == Brightness.light)
+                ? colorScheme.background
+                : colorScheme.surfaceVariant, // Navigation bar
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: (brightness == Brightness.light)
+                ? Brightness.dark
+                : Brightness.light, // Status bar
+          ),
+          expandedHeight: 200.0,
+          floating: false,
+          pinned: true,
+          flexibleSpace: FlexibleSpaceBar(
+            // titlePadding: const EdgeInsets.fromLTRB(20, 0, 0, 16),
+            title: Text(
+              'Options',
+              style: TextStyle(
+                  color: (brightness == Brightness.light)
+                      ? colorScheme.onSurfaceVariant
+                      : colorScheme.onBackground,
+                  fontWeight: FontWeight.w500),
+            ),
+
             centerTitle: true,
           ),
-          body: ListView(
-            children: <Widget>[
-              IgnorePointer(
+        ),
+
+        // sliverListHavingSliverChildDelegate(
+        //     isDynamicColoringSupported, themeProvider),
+
+        sliverListUsingSwitchCases(isDynamicColoringSupported, themeProvider),
+
+        // const SliverFillRemaining(
+        //     //     child: SizedBox(
+        //     //   height: 20,
+        //     // )
+        //     ),
+
+        // SliverToBoxAdapter(
+        //   child: listOfOptions(isDynamicColoringSupported, themeProvider),
+        // ),
+      ]),
+    );
+  }
+
+  SliverList sliverListUsingSwitchCases(
+      bool isDynamicColoringSupported, DynamicThemeProvider themeProvider) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          switch (index) {
+            case 0:
+              return IgnorePointer(
                 ignoring: !isDynamicColoringSupported,
                 child: Opacity(
                   opacity: isDynamicColoringSupported ? 1.0 : 0.5,
                   child: SwitchListTile(
-                    title: const Text('Use System colors'),
-                    subtitle: const Text('Use Material3\'s dynamic colors'),
+                    title: const Text('Use system colors'),
+                    subtitle: isDynamicColoringSupported
+                        ? const Text('Use Material3\'s dynamic colors')
+                        : const Text('Not supported'),
                     value: themeProvider
                         .isDynamicColoringEnabled, // You can set the initial value here
                     onChanged: (bool value) {
@@ -180,9 +315,10 @@ class _OptionsPageState extends State<OptionsPage> {
                     },
                   ),
                 ),
-              ),
-              SwitchListTile(
-                title: const Text('Show Welcome Page'),
+              );
+            case 1:
+              return SwitchListTile(
+                title: const Text('Show welcome Page'),
                 subtitle: const Text('When app is opened'),
                 value: showWelcomePage, // You can set the initial value here
                 onChanged: (bool value) {
@@ -192,8 +328,76 @@ class _OptionsPageState extends State<OptionsPage> {
                     saveWelcomePageState(value);
                   });
                 },
-              ),
-              ListTile(
+              );
+            case 2:
+              return SwitchListTile(
+                title: const Text('Force light mode'),
+                // subtitle: const Text('When app is opened'),
+                value: isLightModeForced, // You can set the initial value here
+                onChanged: (bool value) {
+                  // Handle toggle switch state changes
+                  setState(() {
+                    isLightModeForced = value;
+                    themeProvider.toggleLightMode(value);
+                    saveIsLightModeForcedBoolValue(value);
+                  });
+                },
+              );
+            case 3:
+              return SwitchListTile(
+                title: const Text('Ask for server URL everytime'),
+                value: askForUrlEverytime,
+                onChanged: (value) {
+                  setState(() {
+                    askForUrlEverytime = value;
+                    saveAskForUrlEverytime(value);
+                  });
+                },
+              );
+            case 4:
+              return ListTile(
+                title: const Text('Edit server URL'),
+                subtitle: Text(urlText),
+                trailing: const Icon(Icons.arrow_forward),
+                onTap: () async {
+                  await Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                    return const SaveUrlDialog();
+                  }));
+                  setState(() {});
+                },
+              );
+            case 5:
+              return SwitchListTile(
+                  title: const Text('Demo mode'),
+                  value: isDemoModeOn,
+                  onChanged: (value) {
+                    setState(() {
+                      isDemoModeOn = value;
+                    });
+                    saveIsDemoModeOn(value);
+                  });
+            case 6:
+              return ListTile(
+                title: const Text('About'),
+                trailing: const Icon(Icons.arrow_forward),
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return const AboutPage();
+                  }));
+                },
+              );
+            case 7:
+              return SwitchListTile(
+                  title: const Text('Use Nested Scroll View'),
+                  value: useNestedScrollView,
+                  onChanged: ((value) {
+                    setState(() {
+                      useNestedScrollView = value;
+                    });
+                  }));
+            case 8:
+              return ListTile(
                 title: Text(tester),
                 trailing: const Icon(Icons.arrow_forward),
                 onTap: () {
@@ -201,39 +405,555 @@ class _OptionsPageState extends State<OptionsPage> {
                   loadThemePreference();
                   // Navigate to a detailed notification settings page
                 },
-              ),
-            ],
-          ),
-        );
-      },
+              );
+            default:
+              return const ListTile(
+                title: Text('empty list'),
+              );
+          }
+          // return ListTile(
+          //   title: Text('Setting $index'),
+          //   // Add your settings widgets here
+          // );
+        },
+        childCount: 9, // Adjust this count as needed
+      ),
     );
   }
 
-  Scaffold originalScaffold(ColorScheme colorScheme) {
+  Scaffold scaffoldUsingNestedScrollView(
+      Brightness brightness,
+      ColorScheme colorScheme,
+      bool isDynamicColoringSupported,
+      DynamicThemeProvider themeProvider) {
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: (brightness == Brightness.light)
+          ? colorScheme.surfaceVariant
+          : colorScheme.background,
+      // body: oldCustomScrollView(isDynamicColoringSupported, themeProvider),
+      body: NestedScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        floatHeaderSlivers: true,
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SliverAppBar(
+            centerTitle: true,
+            systemOverlayStyle: SystemUiOverlayStyle(
+              systemNavigationBarIconBrightness:
+                  (brightness == Brightness.light)
+                      ? Brightness.dark
+                      : Brightness.light,
+              systemNavigationBarColor: (brightness == Brightness.light)
+                  ? colorScheme.background
+                  : colorScheme.surfaceVariant, // Navigation bar
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: (brightness == Brightness.light)
+                  ? Brightness.dark
+                  : Brightness.light, // Status bar
+            ),
+            backgroundColor: (brightness == Brightness.light)
+                ? colorScheme.surfaceVariant
+                : colorScheme.background,
+            // primary: true,
+            expandedHeight: 200.0, // Height when expanded
+            floating: false, // The title won't float when scrolled down
+            pinned: true, // The title stays at the top when scrolled up
+            flexibleSpace: FlexibleSpaceBar(
+              // titlePadding: const EdgeInsets.fromLTRB(24, 0, 0, 16),
+              centerTitle: true,
+              title: Text(
+                'Options',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: (brightness == Brightness.light)
+                        ? colorScheme.onSurfaceVariant
+                        : colorScheme.onBackground,
+                    fontWeight: FontWeight.w500),
+              ), // Title
+              // titlePadding: EdgeInsets.fromLTRB(24, 0, 0, 0),
+              // Background image
+            ),
+          ),
+        ],
+
+        // body: listOfOptions(isDynamicColoringSupported, themeProvider),
+
+        // body: singleChildScrollViewHavingListOfOptions(
+        //     isDynamicColoringSupported, themeProvider)
+
+        body: CustomScrollView(
+          slivers: [
+            sliverListUsingSwitchCases(
+                isDynamicColoringSupported, themeProvider),
+
+            // listOfOptions(isDynamicColoringSupported, themeProvider)
+
+            // SliverFillRemaining(
+            //   child: listOfOptions(isDynamicColoringSupported, themeProvider),
+            // ),
+
+            // SliverFillRemaining(
+            //   child: sliverListUsingSwitchCases(
+            //       isDynamicColoringSupported, themeProvider),
+            // ),
+
+            // SliverFillRemaining(child: Container())
+          ],
+        ),
+
+        // body: sliverListUsingSwitchCases(
+        //     isDynamicColoringSupported, themeProvider),
+      ),
+    );
+  }
+
+  SingleChildScrollView singleChildScrollViewHavingListOfOptions(
+      bool isDynamicColoringSupported, DynamicThemeProvider themeProvider) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          IgnorePointer(
+            ignoring: !isDynamicColoringSupported,
+            child: Opacity(
+              opacity: isDynamicColoringSupported ? 1.0 : 0.5,
+              child: SwitchListTile(
+                title: const Text('Use System colors'),
+                subtitle: isDynamicColoringSupported
+                    ? const Text('Use Material3\'s dynamic colors')
+                    : const Text('Not Supported'),
+                value: themeProvider
+                    .isDynamicColoringEnabled, // You can set the initial value here
+                onChanged: (bool value) {
+                  // Handle toggle switch state changes
+                  setState(() {
+                    isDynamicColoringEnabled = value;
+                    themeProvider.toggleTheme(value);
+                    saveThemePreference(value);
+                  });
+                },
+              ),
+            ),
+          ),
+          SwitchListTile(
+            title: const Text('Show Welcome Page'),
+            subtitle: const Text('When app is opened'),
+            value: showWelcomePage, // You can set the initial value here
+            onChanged: (bool value) {
+              // Handle toggle switch state changes
+              setState(() {
+                showWelcomePage = value;
+                saveWelcomePageState(value);
+              });
+            },
+          ),
+          SwitchListTile(
+            title: const Text('Force Light Mode'),
+            // subtitle: const Text('When app is opened'),
+            value: isLightModeForced, // You can set the initial value here
+            onChanged: (bool value) {
+              // Handle toggle switch state changes
+              setState(() {
+                isLightModeForced = value;
+                themeProvider.toggleLightMode(value);
+                saveIsLightModeForcedBoolValue(value);
+              });
+            },
+          ),
+          ListTile(
+            title: Text(tester),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: () {
+              tester = 'tester $tester';
+              loadThemePreference();
+              // Navigate to a detailed notification settings page
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  SliverList sliverListHavingSliverChildDelegate(
+      bool isDynamicColoringSupported, DynamicThemeProvider themeProvider) {
+    return SliverList(
+        delegate: SliverChildListDelegate([
+      IgnorePointer(
+        ignoring: !isDynamicColoringSupported,
+        child: Opacity(
+          opacity: isDynamicColoringSupported ? 1.0 : 0.5,
+          child: SwitchListTile(
+            title: const Text('Use System colors'),
+            subtitle: isDynamicColoringSupported
+                ? const Text('Use Material3\'s dynamic colors')
+                : const Text('Not Supported'),
+            value: themeProvider
+                .isDynamicColoringEnabled, // You can set the initial value here
+            onChanged: (bool value) {
+              // Handle toggle switch state changes
+              setState(() {
+                isDynamicColoringEnabled = value;
+                themeProvider.toggleTheme(value);
+                saveThemePreference(value);
+              });
+            },
+          ),
+        ),
+      ),
+      SwitchListTile(
+        title: const Text('Show Welcome Page'),
+        subtitle: const Text('When app is opened'),
+        value: showWelcomePage, // You can set the initial value here
+        onChanged: (bool value) {
+          // Handle toggle switch state changes
+          setState(() {
+            showWelcomePage = value;
+            saveWelcomePageState(value);
+          });
+        },
+      ),
+      SwitchListTile(
+        title: const Text('Force Light Mode'),
+        // subtitle: const Text('When app is opened'),
+        value: isLightModeForced, // You can set the initial value here
+        onChanged: (bool value) {
+          // Handle toggle switch state changes
+          setState(() {
+            isLightModeForced = value;
+            themeProvider.toggleLightMode(value);
+            saveIsLightModeForcedBoolValue(value);
+          });
+        },
+      ),
+      ListTile(
+        title: Text(tester),
+        trailing: const Icon(Icons.arrow_forward),
+        onTap: () {
+          tester = 'tester $tester';
+          loadThemePreference();
+          // Navigate to a detailed notification settings page
+        },
+      ),
+    ]));
+  }
+
+  ListView listOfOptions(
+      bool isDynamicColoringSupported, DynamicThemeProvider themeProvider) {
+    return ListView(
+      padding: const EdgeInsets.all(8),
+      children: <Widget>[
+        IgnorePointer(
+          ignoring: !isDynamicColoringSupported,
+          child: Opacity(
+            opacity: isDynamicColoringSupported ? 1.0 : 0.5,
+            child: SwitchListTile(
+              title: const Text('Use System colors'),
+              subtitle: isDynamicColoringSupported
+                  ? const Text('Use Material3\'s dynamic colors')
+                  : const Text('Not Supported'),
+              value: themeProvider
+                  .isDynamicColoringEnabled, // You can set the initial value here
+              onChanged: (bool value) {
+                // Handle toggle switch state changes
+                setState(() {
+                  isDynamicColoringEnabled = value;
+                  themeProvider.toggleTheme(value);
+                  saveThemePreference(value);
+                });
+              },
+            ),
+          ),
+        ),
+        SwitchListTile(
+          title: const Text('Show Welcome Page'),
+          subtitle: const Text('When app is opened'),
+          value: showWelcomePage, // You can set the initial value here
+          onChanged: (bool value) {
+            // Handle toggle switch state changes
+            setState(() {
+              showWelcomePage = value;
+              saveWelcomePageState(value);
+            });
+          },
+        ),
+        SwitchListTile(
+          title: const Text('Force Light Mode'),
+          // subtitle: const Text('When app is opened'),
+          value: isLightModeForced, // You can set the initial value here
+          onChanged: (bool value) {
+            // Handle toggle switch state changes
+            setState(() {
+              isLightModeForced = value;
+              themeProvider.toggleLightMode(value);
+              saveIsLightModeForcedBoolValue(value);
+            });
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+        ListTile(
+          title: Text(tester),
+          trailing: const Icon(Icons.arrow_forward),
+          onTap: () {
+            tester = 'tester $tester';
+            loadThemePreference();
+            // Navigate to a detailed notification settings page
+          },
+        ),
+      ],
+    );
+  }
+
+  CustomScrollView oldCustomScrollView(
+      bool isDynamicColoringSupported, DynamicThemeProvider themeProvider) {
+    return CustomScrollView(
+      slivers: <Widget>[
+        const SliverAppBar(
+          automaticallyImplyLeading: false,
+          primary: true,
+          expandedHeight: 200.0, // Height when expanded
+          floating: false, // The title won't float when scrolled down
+          pinned: true, // The title stays at the top when scrolled up
+          flexibleSpace: FlexibleSpaceBar(
+            title: Text('Options'), // Title
+            // Background image
+          ),
+        ),
+
+        // sliverListUsingSwitchCases(isDynamicColoringSupported, themeProvider),
+        SliverFillRemaining(
+          child: listOfOptions(isDynamicColoringSupported, themeProvider),
+        )
+      ],
+    );
+  }
+
+  Scaffold originalScaffold(Brightness brightness, ColorScheme colorScheme,
+      bool isDynamicColoringSupported, DynamicThemeProvider themeProvider) {
+    return Scaffold(
+      backgroundColor: (brightness == Brightness.light)
+          ? colorScheme.surfaceVariant
+          : colorScheme.background,
       appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle(
+            systemNavigationBarIconBrightness: (brightness == Brightness.light)
+                ? Brightness.dark
+                : Brightness.light,
+            systemNavigationBarColor:
+                colorScheme.surfaceVariant, // Navigation bar
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark // Status bar
+            ),
+        backgroundColor: (brightness == Brightness.light)
+            ? colorScheme.surfaceVariant
+            : colorScheme.background,
         title: const Text('Options'),
         centerTitle: true,
       ),
       body: ListView(
         children: <Widget>[
+          IgnorePointer(
+            ignoring: !isDynamicColoringSupported,
+            child: Opacity(
+              opacity: isDynamicColoringSupported ? 1.0 : 0.5,
+              child: SwitchListTile(
+                title: const Text('Use System colors'),
+                subtitle: isDynamicColoringSupported
+                    ? const Text('Use Material3\'s dynamic colors')
+                    : const Text('Not Supported'),
+                value: themeProvider
+                    .isDynamicColoringEnabled, // You can set the initial value here
+                onChanged: (bool value) {
+                  // Handle toggle switch state changes
+                  setState(() {
+                    isDynamicColoringEnabled = value;
+                    themeProvider.toggleTheme(value);
+                    saveThemePreference(value);
+                  });
+                },
+              ),
+            ),
+          ),
           SwitchListTile(
-            title: const Text('Use Material 3 theming'),
-            value:
-                isDynamicColoringEnabled, // You can set the initial value here
+            title: const Text('Show Welcome Page'),
+            subtitle: const Text('When app is opened'),
+            value: showWelcomePage, // You can set the initial value here
             onChanged: (bool value) {
               // Handle toggle switch state changes
               setState(() {
-                isDynamicColoringEnabled = value;
-                saveThemePreference(value);
+                showWelcomePage = value;
+                saveWelcomePageState(value);
+              });
+            },
+          ),
+          SwitchListTile(
+            title: const Text('Force Light Mode'),
+            // subtitle: const Text('When app is opened'),
+            value: isLightModeForced, // You can set the initial value here
+            onChanged: (bool value) {
+              // Handle toggle switch state changes
+              setState(() {
+                isLightModeForced = value;
+                themeProvider.toggleLightMode(value);
+                saveIsLightModeForcedBoolValue(value);
               });
             },
           ),
           ListTile(
-            title: const Text('dummy setting'),
+            title: Text(tester),
             trailing: const Icon(Icons.arrow_forward),
             onTap: () {
+              tester = 'tester $tester';
+              loadThemePreference();
               // Navigate to a detailed notification settings page
             },
           ),

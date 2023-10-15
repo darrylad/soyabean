@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:soyabean/actions_page.dart';
 import 'package:soyabean/description_page.dart';
-// import 'package:soyabean/actions_page.dart';
+import 'package:soyabean/main.dart';
+import 'package:soyabean/url_text_input_dialog.dart';
 // import 'dart:io';
 // import 'package:provider/provider.dart';
 
@@ -88,6 +91,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   void dispose() {
     controller?.dispose();
     super.dispose();
+    // _textFieldController.dispose();
     _isCapturing = false;
   }
 
@@ -100,7 +104,9 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       return;
     }
 
-    if (state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
       // Free up memory when camera not active
       cameraController.dispose();
       _isCameraInitialized = false;
@@ -129,10 +135,72 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     }
   }
 
-  final TextEditingController _textFieldController = TextEditingController();
+  // final TextEditingController _textFieldController = TextEditingController();
 
-  Future<void> _displayTextInputDialog(BuildContext context, image) async {
-    var colorScheme = Theme.of(context).colorScheme;
+  // bool isUploadButtonEnabled = false;
+
+  // Future<void> _displayTextInputDialog(BuildContext context, image) async {
+  //   var colorScheme = Theme.of(context).colorScheme;
+  //   // return oldShowDialog(context, colorScheme, image);
+  //   return showDialog(
+  //       barrierDismissible: false,
+  //       context: context,
+  //       builder: (context) {
+  //         return StatefulBuilder(
+  //           builder: (context, setState) {
+  //             return AlertDialog(
+  //               title: Text('Enter Server URL',
+  //                   style: TextStyle(color: colorScheme.onSurfaceVariant)),
+  //               content: Column(
+  //                 mainAxisSize: MainAxisSize.min,
+  //                 children: [
+  //                   TextField(
+  //                     onChanged: (value) {
+  //                       setState(() {});
+  //                       // setState(() {
+  //                       //   urlText = value;
+  //                       // });
+  //                     },
+  //                     controller: _textFieldController,
+  //                     decoration: const InputDecoration(
+  //                         hintText: "http://your-matlab-server-ip:3000"),
+  //                   ),
+  //                   const SizedBox(height: 10),
+  //                   Text(urlText),
+  //                 ],
+  //               ),
+  //               actions: [
+  //                 TextButton(
+  //                   onPressed: () {
+  //                     Navigator.pop(context);
+  //                   },
+  //                   child: const Text('CANCEL'),
+  //                 ),
+  //                 TextButton(
+  //                   onPressed: isUploadButtonEnabled
+  //                       ? () {
+  //                           setState(() {
+  //                             urlText = _textFieldController.text;
+  //                           });
+  //                           Navigator.push(
+  //                               context,
+  //                               MaterialPageRoute(
+  //                                   builder: (context) =>
+  //                                       DescriptionPage(image: image)));
+  //                         }
+  //                       : null,
+  //                   child: const Text('UPLOAD'),
+  //                 ),
+  //               ],
+  //             );
+  //           },
+  //           // child: enterServerUrlAlertBox(colorScheme, context, image),
+  //         );
+  //       });
+  // }
+
+  Future<void> oldShowDialog(
+      BuildContext context, ColorScheme colorScheme, image) {
     return showDialog(
         barrierDismissible: false,
         context: context,
@@ -144,7 +212,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
             ),
             content: TextField(
               onChanged: (value) {},
-              controller: _textFieldController,
+              // controller: _textFieldController,
               decoration: const InputDecoration(
                   hintText: "http://your-matlab-server-ip:3000"),
             ),
@@ -178,39 +246,92 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
         return AlertDialog(
           content: Padding(
             padding: const EdgeInsets.fromLTRB(1.0, 10, 1.0, 10),
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                image: DecorationImage(
-                  image: FileImage(image!),
-                  fit: BoxFit.cover,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 300,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    image: DecorationImage(
+                      image: FileImage(image!),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 10),
+                (askForUrlEverytime)
+                    ? const SizedBox(
+                        height: 0,
+                      )
+                    : InkWell(
+                        onLongPress: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ShowUrlTextDialog(
+                                        image: image,
+                                        context: context,
+                                      )));
+                        },
+                        child: SizedBox(
+                            height: 30,
+                            child: Center(child: Text('URL: $urlText')))),
+              ],
             ),
           ),
           actions: <Widget>[
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
               Expanded(
                 child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                          Theme.of(context).colorScheme.primary),
-                      foregroundColor: MaterialStateProperty.all<Color>(
-                          Theme.of(context).colorScheme.onPrimary),
-                      elevation: MaterialStateProperty.all<double>(4),
-                    ),
-                    onPressed: () {
-                      _displayTextInputDialog(context, image);
-                    },
-                    child: const Text('Proceed')),
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                        Theme.of(context).colorScheme.primary),
+                    foregroundColor: MaterialStateProperty.all<Color>(
+                        Theme.of(context).colorScheme.onPrimary),
+                    elevation: MaterialStateProperty.all<double>(4),
+                  ),
+                  onPressed: () {
+                    // _displayTextInputDialog(context, image);
+
+                    // final showUrlTextDialog = ShowUrlTextDialog(
+                    //   image: image, // Provide the image parameter.
+                    //   context: context, // Provide the context parameter.
+                    // );
+                    // showUrlTextDialog.callDisplayTextInputDialog(
+                    //     image, context);
+
+                    // displayTextInputDialog(context, image);
+
+                    // ShowUrlTextDialog(image: image, context: context);
+
+                    (askForUrlEverytime)
+                        ? Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ShowUrlTextDialog(
+                                      image: image,
+                                      context: context,
+                                    )))
+                        : Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    DescriptionPage(image: image)));
+                  },
+                  child: (askForUrlEverytime)
+                      ? const Text('Proceed')
+                      : const Text('Upload'),
+                ),
               ),
               const SizedBox(width: 18),
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
+                    controller!.resumePreview();
                   },
                   child: const Text('Cancel'),
                 ),
@@ -252,6 +373,14 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
           ? colorScheme.onBackground
           : colorScheme.background,
       appBar: AppBar(
+        systemOverlayStyle: SystemUiOverlayStyle(
+          systemNavigationBarIconBrightness: Brightness.light,
+          systemNavigationBarColor: (brightness == Brightness.light)
+              ? colorScheme.onBackground
+              : colorScheme.background, // Navigation bar
+          statusBarColor: Colors.transparent, // Status bar
+          statusBarIconBrightness: Brightness.light,
+        ),
         iconTheme: IconThemeData(
             color: (brightness == Brightness.light)
                 ? colorScheme.surface
@@ -388,6 +517,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                 _isCapturing = false;
               });
               _showImageDialog(image);
+              controller!.pausePreview();
             },
     );
   }

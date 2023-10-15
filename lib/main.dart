@@ -1,5 +1,6 @@
 // import 'dart:io'; // pick this
 import 'dart:async';
+import 'package:camera/camera.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -22,23 +23,49 @@ bool isDynamicColoringEnabled =
     false; // stores whether material3 is enabled or not
 bool isDynamicColorsSupportedBool =
     false; // stores whether dynamic colors are supported or not
+String platformOS = 'unknown'; // stores the platform OS. Eg. Android, iOS, etc.
+bool areCamerasAvailable = false; // stores whether cameras are available or not
+bool isLightModeForced = false; // stores whether light mode is forced or not
+bool askForUrlEverytime =
+    true; // stores whether to ask for url everytime or not
+bool isDemoModeOn = false; // stores whether demo mode is on or not
 
 void main() async {
   // runApp(const MyApp());
+
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
+
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
   isFirstTime = prefs.getBool('isFirstTime') ?? true;
   showWelcomePage = prefs.getBool('showWelcomePage') ?? true;
+  // platformOS = await getPlatformOS();
 
   if (isFirstTime == true) {
+    platformOS = await getPlatformOS();
     await getAndroidVersion();
+
     isDynamicColoringEnabled = isDynamicColorsSupported();
     isDynamicColorsSupportedBool = isDynamicColorsSupported();
+
     prefs.setBool('isDynamicColorsSupportedBool', isDynamicColorsSupportedBool);
     prefs.setBool('isDynamicColoringEnabled', isDynamicColoringEnabled);
+    prefs.setString('platformOS', platformOS);
   } else {
     isDynamicColoringEnabled =
         prefs.getBool('isDynamicColoringEnabled') ?? false;
+
+    platformOS = prefs.getString('platformOS') ?? 'unknown';
+
+    isLightModeForced = prefs.getBool('isLightModeForced') ?? false;
+
+    urlText = prefs.getString('urlText') ?? 'https://example.com';
+
+    askForUrlEverytime = prefs.getBool('askForUrlEverytime') ?? true;
+
+    isDemoModeOn = prefs.getBool('isDemoModeOn') ?? false;
   }
 
   runApp(ChangeNotifierProvider(
@@ -67,7 +94,6 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     loadThemePreference();
     loadWelcomePageState();
-
     // getAndroidVersion();
   }
 
@@ -122,21 +148,65 @@ class _MyAppState extends State<MyApp> {
                   ? ThemeData(
                       colorScheme: lightDynamic,
                       useMaterial3: true,
+                      appBarTheme: const AppBarTheme(
+                        systemOverlayStyle: SystemUiOverlayStyle(
+                          systemNavigationBarIconBrightness:
+                              Brightness.dark, // Navigation bar
+                          statusBarColor: Colors.transparent,
+                          statusBarIconBrightness:
+                              Brightness.dark, // Status bar
+                          statusBarBrightness: Brightness.dark, // Status bar
+                        ),
+                      ),
                     )
                   : ThemeData(
                       colorScheme:
                           ColorScheme.fromSeed(seedColor: Colors.green),
                       useMaterial3: true,
+                      appBarTheme: const AppBarTheme(
+                        systemOverlayStyle: SystemUiOverlayStyle(
+                          systemNavigationBarIconBrightness:
+                              Brightness.dark, // Navigation bar
+                          statusBarColor: Colors.transparent,
+                          statusBarIconBrightness:
+                              Brightness.dark, // Status bar
+                          statusBarBrightness: Brightness.dark, // Status bar
+                        ),
+                      ),
                     ),
               darkTheme: themeProvider.isDynamicColoringEnabled
-                  ? ThemeData.from(
-                      colorScheme: darkDynamic!, useMaterial3: true)
+                  ? ThemeData(
+                      colorScheme: darkDynamic!,
+                      useMaterial3: true,
+                      appBarTheme: const AppBarTheme(
+                        systemOverlayStyle: SystemUiOverlayStyle(
+                          systemNavigationBarIconBrightness:
+                              Brightness.light, // Navigation bar
+                          statusBarColor: Colors.transparent,
+                          statusBarIconBrightness:
+                              Brightness.light, // Status bar
+                          statusBarBrightness: Brightness.light, // Status bar
+                        ),
+                      ),
+                    )
                   : ThemeData(
                       colorScheme: ColorScheme.fromSeed(
                           seedColor: Colors.green, brightness: Brightness.dark),
                       useMaterial3: true,
+                      appBarTheme: const AppBarTheme(
+                        systemOverlayStyle: SystemUiOverlayStyle(
+                          systemNavigationBarIconBrightness:
+                              Brightness.light, // Navigation bar
+                          statusBarColor: Colors.transparent,
+                          statusBarIconBrightness:
+                              Brightness.light, // Status bar
+                          statusBarBrightness: Brightness.light, // Status bar
+                        ),
+                      ),
                     ),
-              themeMode: ThemeMode.system,
+              themeMode: themeProvider.isLightModeForcedVar
+                  ? ThemeMode.light
+                  : ThemeMode.system,
               home: const Splash(),
             );
           },
@@ -182,7 +252,7 @@ class Splash extends StatefulWidget {
 bool meow = isDynamicColoringEnabled;
 
 class _SplashState extends State<Splash> {
-  final splashDelay = 2;
+  // final splashDelay = 2;
 
   @override
   void initState() {
@@ -190,6 +260,8 @@ class _SplashState extends State<Splash> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       afterFirstLayout(context);
     });
+    WidgetsFlutterBinding.ensureInitialized();
+    checkCameraAvailability();
     loadWelcomePageState();
     setIsFirstTimeAsFalse();
     // _loadWidget();
@@ -235,8 +307,56 @@ class _SplashState extends State<Splash> {
     }
   }
 
+  Future<void> checkCameraAvailability() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    List<CameraDescription> cameraList = [];
+    // List<CameraDescription> cameras =
+    //     (platformOS == 'Android' || platformOS == 'iOS')
+    //         ? await availableCameras()
+    //         : [];
+
+    // if (cameras.isNotEmpty) {
+    //   // Cameras are available, you can initialize and use them.
+    //   // runApp(MyApp(camera: cameras.first));
+    //   setState(() {
+    //     areCamerasAvailable = true;
+    //   });
+    // }
+    // final cameras = (platformOS == 'Android' || platformOS == 'iOS')
+    //     ? await availableCameras()
+    //     : null;
+    // tester = '$platformOS';
+
+    if (platformOS == 'Android' || platformOS == 'iOS') {
+      // cameras = await availableCameras();
+      try {
+        WidgetsFlutterBinding.ensureInitialized();
+        cameraList = await availableCameras();
+        tester = 'try called';
+      } on CameraException catch (e) {
+        debugPrint('Error in fetching the cameras: $e');
+      }
+      if (cameraList.isNotEmpty) {
+        // Cameras are available, you can initialize and use them.
+        // runApp(MyApp(camera: cameras.first));
+        setState(() {
+          areCamerasAvailable = true;
+        });
+        tester = 'cameras.isNotEmpty';
+      }
+    }
+    // if (cameras.isEmpty) {
+    //   // No cameras available, handle this scenario.
+    //   setState(() {
+    //     areCamerasAvailable = false;
+    //   });
+    // }
+  }
+
   // @override
   void afterFirstLayout(BuildContext context) {
+    WidgetsFlutterBinding.ensureInitialized();
+    // checkCameraAvailability();
     loadWelcomePageState();
     if (isFirstTime) {
       setState(() {
@@ -253,18 +373,26 @@ class _SplashState extends State<Splash> {
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
+    var brightness = Theme.of(context).brightness;
     return Scaffold(
       // backgroundColor: Colors.white,
       backgroundColor: colorScheme.surfaceVariant,
       appBar: AppBar(
         backgroundColor: colorScheme.surfaceVariant,
         systemOverlayStyle: SystemUiOverlayStyle(
-            systemNavigationBarIconBrightness: Brightness.dark,
-            systemNavigationBarColor:
-                colorScheme.surfaceVariant, // Navigation bar
-            statusBarColor: colorScheme.surfaceVariant,
-            statusBarIconBrightness: Brightness.dark // Status bar
-            ),
+          systemNavigationBarIconBrightness: (brightness == Brightness.light)
+              ? Brightness.dark
+              : Brightness.light,
+          systemNavigationBarColor:
+              colorScheme.surfaceVariant, // Navigation bar
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: (brightness == Brightness.light)
+              ? Brightness.dark
+              : Brightness.light,
+          statusBarBrightness: (brightness == Brightness.light)
+              ? Brightness.dark
+              : Brightness.light, // Status bar
+        ),
       ),
       body: Center(
         child: CircularProgressIndicator(
@@ -345,11 +473,16 @@ class _HomePageState extends State<HomePage> {
     // }
 
     SystemUiOverlayStyle overlayStyle = SystemUiOverlayStyle(
-      systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarIconBrightness:
+          (brightness == Brightness.light) ? Brightness.dark : Brightness.light,
       systemNavigationBarColor: (brightness == Brightness.light)
           ? colorScheme.background
           : colorScheme.surfaceVariant, // Navigation bar
-      statusBarColor: colorScheme.surfaceVariant, // Status bar
+      statusBarColor: Colors.transparent, // Status bar
+      statusBarIconBrightness:
+          (brightness == Brightness.light) ? Brightness.dark : Brightness.light,
+      statusBarBrightness:
+          (brightness == Brightness.light) ? Brightness.dark : Brightness.light,
     );
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
 
@@ -376,7 +509,9 @@ class _HomePageState extends State<HomePage> {
     // The container for the current page, with its background color
     // and subtle switching animation.
     var mainArea = ColoredBox(
-      color: colorScheme.surfaceVariant,
+      color: (brightness == Brightness.light)
+          ? colorScheme.surfaceVariant
+          : colorScheme.background,
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
         child: page,
@@ -408,6 +543,9 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: (brightness == Brightness.light)
                         ? colorScheme.background
                         : colorScheme.surfaceVariant,
+                    selectedIconTheme:
+                        IconThemeData(color: colorScheme.primary),
+                    selectedItemColor: colorScheme.primary,
                     elevation: 20,
                     items: const [
                       BottomNavigationBarItem(

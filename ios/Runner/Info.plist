@@ -50,5 +50,10 @@
 		<key>NSMicrophoneUsageDescription</key>
 		<string>This app needs access to microphone when used</string>
 
+		<key>UIUserInterfaceStyle</key>
+		<string>Light</string>
+		<key>UIViewControllerBasedStatusBarAppearance</key>
+		<true/>
+
 	</dict>
 </plist>
