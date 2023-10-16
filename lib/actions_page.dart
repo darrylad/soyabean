@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:soyabean/camera_page.dart';
 import 'package:soyabean/description_page.dart';
 import 'package:soyabean/main.dart';
+import 'package:soyabean/options_page.dart';
 import 'package:soyabean/url_text_input_dialog.dart';
 // import 'package:soyabean/main.dart';
 // import 'package:soyabean/main.dart';
@@ -258,7 +259,7 @@ class _ActionsState extends State<ActionsPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           content: Padding(
-            padding: const EdgeInsets.fromLTRB(1.0, 10, 1.0, 10),
+            padding: const EdgeInsets.fromLTRB(1.0, 10, 1.0, 0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -322,9 +323,12 @@ class _ActionsState extends State<ActionsPage> {
                                 builder: (context) =>
                                     DescriptionPage(image: _image)));
                   },
+                  // child: (askForUrlEverytime)
+                  //     ? const Text('Proceed')
+                  //     : const Text('Upload'),
                   child: (askForUrlEverytime)
                       ? const Text('Proceed')
-                      : const Text('Upload'),
+                      : Text(uploadText),
                 ),
               ),
               const SizedBox(width: 18),

@@ -3,6 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:soyabean/actions_page.dart';
@@ -19,6 +20,8 @@ class DescriptionPage extends StatefulWidget {
 class _DescriptionPageState extends State<DescriptionPage> {
   String result = 'Result will be displayed here';
   late File? image;
+
+  String status = 'Preparing...';
 
   @override
   void initState() {
@@ -38,11 +41,12 @@ class _DescriptionPageState extends State<DescriptionPage> {
 
       if (response.statusCode == 200) {
         setState(() {
-          result = 'Image successfully processed: ${response.body}';
+          status = 'Image successfully processed.';
+          result = response.body;
         });
       } else if (response.statusCode == 202) {
         setState(() {
-          result = 'Image accepted for processing. Check status later.';
+          status = 'Image accepted for processing. Waiting for result.';
         });
       } else {
         setState(() {
@@ -61,7 +65,6 @@ class _DescriptionPageState extends State<DescriptionPage> {
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
     var brightness = Theme.of(context).brightness;
-    String status = 'Preparing...';
     return Scaffold(
         backgroundColor: colorScheme.background,
         appBar: AppBar(
@@ -94,21 +97,99 @@ class _DescriptionPageState extends State<DescriptionPage> {
           // ),
           centerTitle: true,
         ),
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Image.file(widget.image!),
-                  const SizedBox(height: 60),
-                  Text('Status: $status'),
-                  const SizedBox(height: 20),
-                  Text(urlText),
-                ]),
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image.file(widget.image!),
+                        const SizedBox(height: 60),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              descriptionContents(status),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ]),
+                ),
+              ),
+              SizedBox(
+                height: 80,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          backgroundColor: MaterialStateProperty.all(
+                              colorScheme.primaryContainer),
+                        ),
+                        onPressed: () {},
+                        child: const SizedBox(
+                            height: 50, child: Center(child: Text('Save'))),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ButtonStyle(
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          backgroundColor:
+                              MaterialStateProperty.all(colorScheme.onError),
+                        ),
+                        onPressed: () {},
+                        child: SizedBox(
+                            height: 50,
+                            child: Center(
+                                child: Text(
+                              'Delete',
+                              style: TextStyle(color: colorScheme.error),
+                            ))),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
           ),
         ));
+  }
+
+  Column descriptionContents(String status) {
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('STATUS', style: TextStyle(fontSize: 12)),
+        Text(status, style: const TextStyle(fontSize: 20)),
+        const SizedBox(height: 35),
+        const Text('RESULT', style: TextStyle(fontSize: 12)),
+        Text(result, style: const TextStyle(fontSize: 20)),
+        const SizedBox(height: 35),
+        const Text('SERVER URL', style: TextStyle(fontSize: 12)),
+        Text(urlText, style: const TextStyle(fontSize: 20)),
+      ],
+    );
   }
 }

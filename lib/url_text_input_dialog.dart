@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soyabean/actions_page.dart';
 import 'package:soyabean/description_page.dart';
+import 'package:soyabean/options_page.dart';
 // import 'package:soyabean/main.dart';
 
 class ShowUrlTextDialog extends StatefulWidget {
@@ -186,7 +187,7 @@ class _ShowUrlTextDialogState extends State<ShowUrlTextDialog> {
           onPressed: () {
             Navigator.pop(context);
           },
-          child: const Text('BACK'),
+          child: const Text('Back'),
         ),
         TextButton(
           onPressed: isUploadButtonEnabled
@@ -201,7 +202,7 @@ class _ShowUrlTextDialogState extends State<ShowUrlTextDialog> {
                           builder: (context) => DescriptionPage(image: image)));
                 }
               : null,
-          child: const Text('UPLOAD'),
+          child: Text(uploadText),
         ),
       ],
     );
@@ -244,6 +245,9 @@ class _SaveUrlDialogState extends State<SaveUrlDialog> {
       setState(() {
         this.isSaveButtonEnabled = isSaveButtonEnabled;
         // urlText = _textFieldController.text;
+
+        //hive
+        // urlText = box.get('urlText') ?? 'https://example.com';
       });
     });
     loadUrlText();
@@ -327,6 +331,10 @@ class _SaveUrlDialogState extends State<SaveUrlDialog> {
                     urlText = _textFieldController.text;
                   });
                   saveUrlText(urlText);
+
+                  // hive
+                  // box.put('urlText', urlText);
+
                   Navigator.pop(context, urlText);
                 }
               : null,

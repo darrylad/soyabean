@@ -11,6 +11,8 @@ import 'package:soyabean/main.dart';
 import 'package:soyabean/url_text_input_dialog.dart';
 import 'package:soyabean/welcome_page.dart';
 
+String uploadText = (isDemoModeOn) ? 'Next' : 'Upload';
+
 class DynamicThemeProvider with ChangeNotifier {
   // bool _isDynamicColoringEnabled =
   //     isFirstTime ? isDynamicColorsSupported() : isDynamicColoringEnabled;
@@ -370,10 +372,12 @@ class _OptionsPageState extends State<OptionsPage> {
             case 5:
               return SwitchListTile(
                   title: const Text('Demo mode'),
+                  subtitle: const Text('Turns off communication with server'),
                   value: isDemoModeOn,
                   onChanged: (value) {
                     setState(() {
                       isDemoModeOn = value;
+                      uploadText = (isDemoModeOn) ? 'Next' : 'Upload';
                     });
                     saveIsDemoModeOn(value);
                   });
@@ -399,7 +403,7 @@ class _OptionsPageState extends State<OptionsPage> {
             case 8:
               return ListTile(
                 title: Text(tester),
-                trailing: const Icon(Icons.arrow_forward),
+                trailing: const Icon(Icons.question_mark),
                 onTap: () {
                   tester = 'tester $tester';
                   loadThemePreference();

@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:soyabean/actions_page.dart';
 import 'package:soyabean/description_page.dart';
 import 'package:soyabean/main.dart';
+import 'package:soyabean/options_page.dart';
 import 'package:soyabean/url_text_input_dialog.dart';
 // import 'dart:io';
 // import 'package:provider/provider.dart';
@@ -245,7 +246,7 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       builder: (BuildContext context) {
         return AlertDialog(
           content: Padding(
-            padding: const EdgeInsets.fromLTRB(1.0, 10, 1.0, 10),
+            padding: const EdgeInsets.fromLTRB(1.0, 10, 1.0, 0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -321,9 +322,12 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                                 builder: (context) =>
                                     DescriptionPage(image: image)));
                   },
+                  // child: (askForUrlEverytime)
+                  //     ? const Text('Proceed')
+                  //     : const Text('Upload'),
                   child: (askForUrlEverytime)
                       ? const Text('Proceed')
-                      : const Text('Upload'),
+                      : Text(uploadText),
                 ),
               ),
               const SizedBox(width: 18),

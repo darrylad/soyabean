@@ -1,4 +1,4 @@
-// import 'dart:io'; // pick this
+// import 'dart:io';
 import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -6,14 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-// import 'package:after_layout/after_layout.dart';
-// import 'package:provider/provider.dart';
-// import 'package:image_picker/image_picker.dart'; // pick this
-// import 'package:camera/camera.dart'; // pick this
 import 'package:soyabean/actions_page.dart';
 import 'package:soyabean/history_page.dart';
 import 'package:soyabean/options_page.dart';
 import 'package:soyabean/welcome_page.dart';
+// import 'package:after_layout/after_layout.dart';
 // import 'package:go_router/go_router.dart';
 
 // bool showWelcomePage = true;
@@ -30,6 +27,9 @@ bool askForUrlEverytime =
     true; // stores whether to ask for url everytime or not
 bool isDemoModeOn = false; // stores whether demo mode is on or not
 
+//hive
+// var box = Hive.box('mybox');
+
 void main() async {
   // runApp(const MyApp());
 
@@ -42,6 +42,10 @@ void main() async {
   isFirstTime = prefs.getBool('isFirstTime') ?? true;
   showWelcomePage = prefs.getBool('showWelcomePage') ?? true;
   // platformOS = await getPlatformOS();
+
+  // var path = Directory.current.path;
+  // Hive..init(path)..registerAdapter(PersonaAdapter());
+  // await Hive.openBox('mybox');
 
   if (isFirstTime == true) {
     platformOS = await getPlatformOS();
@@ -66,6 +70,9 @@ void main() async {
     askForUrlEverytime = prefs.getBool('askForUrlEverytime') ?? true;
 
     isDemoModeOn = prefs.getBool('isDemoModeOn') ?? false;
+
+    // hive
+    // urlText = box.get('urlText') ?? 'https://example.com';
   }
 
   runApp(ChangeNotifierProvider(
@@ -574,6 +581,9 @@ class _HomePageState extends State<HomePage> {
               children: [
                 SafeArea(
                   child: NavigationRail(
+                    backgroundColor: (brightness == Brightness.light)
+                        ? colorScheme.background
+                        : colorScheme.onInverseSurface,
                     extended: constraints.maxWidth >= 600,
                     destinations: const [
                       NavigationRailDestination(
