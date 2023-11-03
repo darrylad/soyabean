@@ -45,3 +45,9 @@ Todo:
 - Turn camera flash off
 
 - added demo mode
+
+November 1:
+
+- Progress towards integrating model within app.
+- To Do:
+- the model takes images as input. figure out how you'll pass an image to the final input variable in isolate_inferences.dart
