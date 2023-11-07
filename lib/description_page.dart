@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 // import 'dart:ui';
@@ -10,8 +11,13 @@ import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:soyabean/actions_page.dart';
 import 'package:soyabean/imageClassifier.dart';
+// import 'package:soyabean/isolate_inference.dart';
 import 'package:soyabean/main.dart';
 import 'dart:typed_data';
+
+import 'package:tflite_flutter/tflite_flutter.dart';
+
+bool singleThreadedMode = true;
 
 class DescriptionPage extends StatefulWidget {
   final File? image;
@@ -32,6 +38,8 @@ class _DescriptionPageState extends State<DescriptionPage> {
   String? imagePath;
   img.Image? pic;
   Map<String, double>? classification;
+
+  Map<String, dynamic>? classMapping;
 
   // void convertFileToImage(File? file) {
   //   if (file == null) {
@@ -101,26 +109,80 @@ class _DescriptionPageState extends State<DescriptionPage> {
 
   // Future<Uint8List> preprocessImage(String imagePath) async {
   //   // final Uint8List imageUint8List = await loadImageAsUint8List(imagePath);
-
   //   // You can perform additional preprocessing here if needed, such as resizing the image.
-
   //   // Ensure the image data is in the [0, 255] range (like the original code)
   //   imageUint8List.forEach((byte) {
   //     byte ~/= 255; // Rescale pixel values
   //   });
-
   //   return imageUint8List;
   // }
 
   Future<Uint8List> preprocessImage(File imageFile) async {
-    List<int> imageBytes = await imageFile.readAsBytes();
+    var imageBytes = await imageFile.readAsBytes();
+    late var inputData;
+    final decodedImage = img.decodeImage(imageBytes);
+    if (decodedImage != null) {
+      final resizedImage =
+          img.copyResize(decodedImage, width: 150, height: 150);
+      inputData = resizedImage.data?.buffer.asUint8List();
+      for (int i = 0; i < inputData!.length; i++) {
+        // inputData[i] /= 255.0;
+        // inputData[i] = (inputData[i] / 255.0).toDouble();
+        // inputData[i] = (inputData[i] / 255.0);
+        inputData[i] = (inputData[i] ~/ 255);
+      }
+    } else {
+      inputData = imageBytes;
+    }
 
-    // You can perform additional preprocessing here if needed, such as resizing the image.
+    // final inputTensor = Tensor(TfLiteType.float32, [1, 150, 150, 3]);
+    // inputTensor.buffer.asUint8List().setRange(0, inputData.length, inputData);
+
+    // final outputs = Map<int, Object>();
+    // outputs[0] = Tensor(TfLiteType.float32, [1, 5]);
 
     // Ensure the image data is in the [0, 255] range (like the original code)
-    imageBytes = imageBytes.map((byte) => (byte ~/ 255).toInt()).toList();
+    // imageBytes = imageBytes.map((byte) => (byte ~/ 255).toInt()).toList();
 
-    return Uint8List.fromList(imageBytes);
+    return Uint8List.fromList(inputData);
+  }
+
+  late Interpreter interpreter;
+
+  Future<String> runModel(Uint8List inputImageData) async {
+    final interpreterOptions = InterpreterOptions();
+    interpreter = await Interpreter.fromAsset(
+        'assets/leaf_disease_model_01.tflite',
+        options: interpreterOptions);
+    final String classMappingData = await DefaultAssetBundle.of(context)
+        .loadString('assets/class_mapping.json');
+    classMapping = json.decode(classMappingData);
+
+    // final inputImageData = imgInput.data!.buffer.asUint8List();
+    // final outputImageData = List(1 * classMapping!.length);
+    final outputImageData =
+        List<double>.generate(classMapping!.length, (index) => 0);
+
+    // var input = [inputImage];
+    // var output = [
+    //   List<String>.filled(interpreter.getOutputTensors().first.shape[0], "")
+    // ];
+    // var output =
+    //     List<String>.filled(interpreter.getOutputTensors().first.shape[1], "");
+
+    // // Run inference
+    interpreter.run(inputImageData, outputImageData);
+
+    final predictedClassIndex = outputImageData
+        .indexOf(outputImageData.reduce((a, b) => a > b ? a : b));
+    final predictedClassLabel = classMapping![predictedClassIndex.toString()];
+    log(predictedClassLabel.toString());
+
+    // final receivedResult = output.first;
+    // setState(() {
+    //   result = receivedResult[0];
+    // });
+    return predictedClassLabel;
   }
 
   Future<void> processImage() async {
@@ -150,9 +212,16 @@ class _DescriptionPageState extends State<DescriptionPage> {
         // You can use it as needed, such as sending it to a model for predictions.
         setState(() {});
         // log(imgArray.toString());
-        classification =
-            await imageClassificationHelper?.inferenceImage(imgArray);
+        // classification =
+        //     await imageClassificationHelper?.inferenceImage(imgArray);
+
+        singleThreadedMode
+            ? await runModel(imgArray)
+            : classification =
+                await imageClassificationHelper?.inferenceImage(imgArray);
+
         log(classification.toString());
+        log(result);
 
         final entries = classification?.entries;
         log(entries.toString());
@@ -248,7 +317,10 @@ class _DescriptionPageState extends State<DescriptionPage> {
 
   @override
   void dispose() {
-    imageClassificationHelper?.close();
+    singleThreadedMode
+        ? interpreter.close()
+        : imageClassificationHelper?.close();
+
     super.dispose();
   }
 

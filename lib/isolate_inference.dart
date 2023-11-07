@@ -1,6 +1,6 @@
 // import 'dart:io';
 import 'dart:isolate';
-import 'dart:math';
+// import 'dart:math';
 // import 'dart:math';
 import 'dart:typed_data';
 import 'package:camera/camera.dart';
@@ -14,11 +14,11 @@ class IsolateInference {
   static const String _debugName = "TFLITE_INFERENCE";
   final ReceivePort _receivePort = ReceivePort();
   late Isolate _isolate;
-  late SendPort _sendPort;
-  // SendPort? _sendPort;
+  // late SendPort _sendPort;
+  SendPort? _sendPort;
 
-  SendPort get sendPort => _sendPort;
-  // SendPort? get sendPort => _sendPort;
+  // SendPort get sendPort => _sendPort;
+  SendPort? get sendPort => _sendPort;
 
   Future<void> start() async {
     _isolate = await Isolate.spawn<SendPort>(entryPoint, _receivePort.sendPort,
@@ -32,7 +32,8 @@ class IsolateInference {
   }
 
   static void entryPoint(SendPort sendPort) async {
-    final port = ReceivePort();
+    // final port = ReceivePort();
+    var port = ReceivePort();
     sendPort.send(port.sendPort);
     debugPrint("IsolateInference: entryPoint");
 
@@ -42,7 +43,7 @@ class IsolateInference {
     //   return imageBytes;
     // }
 
-    await for (final InferenceModel isolateModel in port) {
+    await for (InferenceModel isolateModel in port) {
       // image_lib.Image? img;
       // if (isolateModel.isCameraFrame()) {
       //   img = ImageUtils.convertCameraImage(isolateModel.cameraImage!);
@@ -76,8 +77,12 @@ class IsolateInference {
 
       // Set tensor input [1, 224, 224, 3]
       // final input = [imageMatrix];
+      // debugPrint("IsolateInference: image2${isolateModel.image2}");
+      debugPrint("IsolateInference: image2");
       final input = [isolateModel.image2];
       debugPrint("IsolateInference: input");
+      // debugPrint(input.toString());
+      // debugPrint(input.toString());
       // Set tensor output [1, 1001]
       // final output = [List<int>.filled(isolateModel.outputShape[1], 0)];
       final output = [List<String>.filled(isolateModel.outputShape[1], "")];
@@ -87,7 +92,7 @@ class IsolateInference {
       interpreter.run(input, output);
       // Get first output tensor
       final result = output.first;
-      log(result.toString() as num);
+      // log(result.toString() as num);
       // int maxScore = result.reduce((a, b) => a + b);
       // // Set classification map {label: points}
       // var classification = <String, double>{};
@@ -99,8 +104,27 @@ class IsolateInference {
       //   }
       // }
       var classification = result;
-      isolateModel.responsePort.send(classification);
+      // isolateModel.responsePort.send(classification);
+      isolateModel.responsePort?.send(classification);
     }
+    // final InferenceModel isolateModel = await port.first;
+    // debugPrint("IsolateInference: image2");
+    // final input = [isolateModel.image2];
+    // debugPrint("IsolateInference: input");
+    // final output = [List<String>.filled(isolateModel.outputShape[1], "")];
+    // Interpreter interpreter =
+    //     Interpreter.fromAddress(isolateModel.interpreterAddress);
+    // interpreter.run(input, output);
+    // final result = output.first;
+    // var classification = result;
+    // isolateModel.responsePort?.send(classification);
+
+    debugPrint("Outside function");
+    num maxScore = 0;
+    for (num i = 0; i < 10; i++) {
+      maxScore = maxScore + i;
+    }
+    debugPrint(maxScore.toString());
   }
 }
 
@@ -113,7 +137,8 @@ class InferenceModel {
   List<String> labels;
   List<int> inputShape;
   List<int> outputShape;
-  late SendPort responsePort;
+  // late SendPort responsePort;
+  SendPort? responsePort;
 
   InferenceModel(this.cameraImage, this.image2, this.interpreterAddress,
       this.labels, this.inputShape, this.outputShape);
