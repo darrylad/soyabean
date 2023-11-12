@@ -276,23 +276,27 @@ class _ActionsState extends State<ActionsPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                (askForUrlEverytime)
-                    ? const SizedBox(
+                (isServerFeatureAvailable)
+                    ? ((askForUrlEverytime)
+                        ? const SizedBox(
+                            height: 0,
+                          )
+                        : InkWell(
+                            onLongPress: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ShowUrlTextDialog(
+                                            image: _image,
+                                            context: context,
+                                          )));
+                            },
+                            child: SizedBox(
+                                height: 30,
+                                child: Center(child: Text('URL: $urlText')))))
+                    : const SizedBox(
                         height: 0,
-                      )
-                    : InkWell(
-                        onLongPress: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ShowUrlTextDialog(
-                                        image: _image,
-                                        context: context,
-                                      )));
-                        },
-                        child: SizedBox(
-                            height: 30,
-                            child: Center(child: Text('URL: $urlText')))),
+                      ),
               ],
             ),
           ),
@@ -326,9 +330,11 @@ class _ActionsState extends State<ActionsPage> {
                   // child: (askForUrlEverytime)
                   //     ? const Text('Proceed')
                   //     : const Text('Upload'),
-                  child: (askForUrlEverytime)
-                      ? const Text('Proceed')
-                      : Text(uploadText),
+                  child: (isServerFeatureAvailable)
+                      ? ((askForUrlEverytime)
+                          ? const Text('Proceed')
+                          : Text(uploadText))
+                      : const Text('Run'),
                 ),
               ),
               const SizedBox(width: 18),

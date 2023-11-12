@@ -40,6 +40,7 @@ class CameraPage extends StatefulWidget {
 class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
   CameraController? controller;
   bool _isCameraInitialized = false;
+  FlashMode? _currentFlashMode;
 
   void onNewCameraSelected(CameraDescription cameraDescription) async {
     final previousCameraController = controller;
@@ -64,6 +65,8 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
     cameraController.addListener(() {
       if (mounted) setState(() {});
     });
+
+    _currentFlashMode = controller!.value.flashMode;
 
     // Initialize controller
     try {
@@ -263,23 +266,27 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   ),
                 ),
                 const SizedBox(height: 10),
-                (askForUrlEverytime)
-                    ? const SizedBox(
+                (isServerFeatureAvailable)
+                    ? ((askForUrlEverytime)
+                        ? const SizedBox(
+                            height: 0,
+                          )
+                        : InkWell(
+                            onLongPress: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ShowUrlTextDialog(
+                                            image: image,
+                                            context: context,
+                                          )));
+                            },
+                            child: SizedBox(
+                                height: 30,
+                                child: Center(child: Text('URL: $urlText')))))
+                    : const SizedBox(
                         height: 0,
-                      )
-                    : InkWell(
-                        onLongPress: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ShowUrlTextDialog(
-                                        image: image,
-                                        context: context,
-                                      )));
-                        },
-                        child: SizedBox(
-                            height: 30,
-                            child: Center(child: Text('URL: $urlText')))),
+                      ),
               ],
             ),
           ),
@@ -325,9 +332,11 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
                   // child: (askForUrlEverytime)
                   //     ? const Text('Proceed')
                   //     : const Text('Upload'),
-                  child: (askForUrlEverytime)
-                      ? const Text('Proceed')
-                      : Text(uploadText),
+                  child: (isServerFeatureAvailable)
+                      ? ((askForUrlEverytime)
+                          ? const Text('Proceed')
+                          : Text(uploadText))
+                      : const Text('Run'),
                 ),
               ),
               const SizedBox(width: 18),

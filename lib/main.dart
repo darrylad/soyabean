@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:soyabean/actions_page.dart';
+import 'package:soyabean/description_page.dart';
 import 'package:soyabean/history_page.dart';
 import 'package:soyabean/options_page.dart';
 import 'package:soyabean/welcome_page.dart';
@@ -24,7 +25,7 @@ String platformOS = 'unknown'; // stores the platform OS. Eg. Android, iOS, etc.
 bool areCamerasAvailable = false; // stores whether cameras are available or not
 bool isLightModeForced = false; // stores whether light mode is forced or not
 bool askForUrlEverytime =
-    true; // stores whether to ask for url everytime or not
+    false; // stores whether to ask for url everytime or not
 bool isDemoModeOn = false; // stores whether demo mode is on or not
 
 //hive
@@ -67,9 +68,11 @@ void main() async {
 
     urlText = prefs.getString('urlText') ?? 'https://example.com';
 
-    askForUrlEverytime = prefs.getBool('askForUrlEverytime') ?? true;
+    askForUrlEverytime = prefs.getBool('askForUrlEverytime') ?? false;
 
     isDemoModeOn = prefs.getBool('isDemoModeOn') ?? false;
+
+    singleThreadedMode = prefs.getBool('singleThreadedMode') ?? true;
 
     // hive
     // urlText = box.get('urlText') ?? 'https://example.com';

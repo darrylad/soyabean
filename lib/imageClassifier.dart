@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
+// import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
@@ -70,7 +71,7 @@ class ImageClassificationHelper {
   //   var results = await responsePort.first;
   //   return results;
   // }
-  Future<Map<String, double>> _inference(InferenceModel inferenceModel) async {
+  Future<String> _inference(InferenceModel inferenceModel) async {
     ReceivePort responsePort = ReceivePort();
     isolateInference.sendPort
         ?.send(inferenceModel..responsePort = responsePort.sendPort);
@@ -80,9 +81,14 @@ class ImageClassificationHelper {
   }
 
   // inference camera frame
-  Future<Map<String, double>> inferenceCameraFrame(
-      CameraImage cameraImage) async {
-    var isolateModel = InferenceModel(cameraImage, null, interpreter.address,
+  // Future<Map<String, double>> inferenceCameraFrame(
+  //     CameraImage cameraImage) async {
+  //   var isolateModel = InferenceModel(cameraImage, [], interpreter.address,
+  //       labels, inputTensor.shape, outputTensor.shape);
+  //   return _inference(isolateModel);
+  // }
+  Future<String> inferenceCameraFrame(CameraImage cameraImage) async {
+    var isolateModel = InferenceModel(cameraImage, [], interpreter.address,
         labels, inputTensor.shape, outputTensor.shape);
     return _inference(isolateModel);
   }
@@ -93,7 +99,7 @@ class ImageClassificationHelper {
   //       inputTensor.shape, outputTensor.shape);
   //   return _inference(isolateModel);
   // }
-  Future<Map<String, double>> inferenceImage(Uint8List? image) async {
+  Future<String> inferenceImage(List<List<List<List<double>>>> image) async {
     var isolateModel = InferenceModel(null, image, interpreter.address, labels,
         inputTensor.shape, outputTensor.shape);
     return _inference(isolateModel);

@@ -7,11 +7,14 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soyabean/about_page.dart';
 import 'package:soyabean/actions_page.dart';
+import 'package:soyabean/description_page.dart';
 import 'package:soyabean/main.dart';
 import 'package:soyabean/url_text_input_dialog.dart';
 import 'package:soyabean/welcome_page.dart';
 
 String uploadText = (isDemoModeOn) ? 'Next' : 'Upload';
+
+bool isServerFeatureAvailable = false;
 
 class DynamicThemeProvider with ChangeNotifier {
   // bool _isDynamicColoringEnabled =
@@ -195,6 +198,11 @@ class _OptionsPageState extends State<OptionsPage> {
     await prefs.setBool('isDemoModeOn', value);
   }
 
+  void saveSingleThreadedMode(bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('singleThreadedMode', value);
+  }
+
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
@@ -347,32 +355,56 @@ class _OptionsPageState extends State<OptionsPage> {
               );
             case 3:
               return SwitchListTile(
-                title: const Text('Ask for server URL everytime'),
-                value: askForUrlEverytime,
-                onChanged: (value) {
-                  setState(() {
-                    askForUrlEverytime = value;
-                    saveAskForUrlEverytime(value);
+                  title: const Text('Single threaded mode'),
+                  subtitle: const Text(
+                      'This may cause the app to stutter when processing images. Turn on if processing fails in the defalut mode.'),
+                  value: singleThreadedMode,
+                  onChanged: (value) {
+                    setState(() {
+                      singleThreadedMode = value;
+                      saveSingleThreadedMode(value);
+                    });
                   });
-                },
-              );
             case 4:
-              return ListTile(
-                title: const Text('Edit server URL'),
-                subtitle: Text(urlText),
-                trailing: const Icon(Icons.arrow_forward),
-                onTap: () async {
-                  await Navigator.push(context,
-                      MaterialPageRoute(builder: (context) {
-                    return const SaveUrlDialog();
-                  }));
-                  setState(() {});
-                },
+              return IgnorePointer(
+                ignoring: !isServerFeatureAvailable,
+                child: Opacity(
+                  opacity: isServerFeatureAvailable ? 1.0 : 0.5,
+                  child: SwitchListTile(
+                    title: const Text('Ask for server URL everytime'),
+                    value: askForUrlEverytime,
+                    onChanged: (value) {
+                      setState(() {
+                        askForUrlEverytime = value;
+                        saveAskForUrlEverytime(value);
+                      });
+                    },
+                  ),
+                ),
               );
             case 5:
+              return IgnorePointer(
+                ignoring: !isServerFeatureAvailable,
+                child: Opacity(
+                  opacity: isServerFeatureAvailable ? 1.0 : 0.5,
+                  child: ListTile(
+                    title: const Text('Edit server URL'),
+                    subtitle: Text(urlText),
+                    trailing: const Icon(Icons.arrow_forward),
+                    onTap: () async {
+                      await Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return const SaveUrlDialog();
+                      }));
+                      setState(() {});
+                    },
+                  ),
+                ),
+              );
+            case 6:
               return SwitchListTile(
                   title: const Text('Demo mode'),
-                  subtitle: const Text('Turns off communication with server'),
+                  subtitle: const Text('Turns off processing'),
                   value: isDemoModeOn,
                   onChanged: (value) {
                     setState(() {
@@ -381,7 +413,7 @@ class _OptionsPageState extends State<OptionsPage> {
                     });
                     saveIsDemoModeOn(value);
                   });
-            case 6:
+            case 7:
               return ListTile(
                 title: const Text('About'),
                 trailing: const Icon(Icons.arrow_forward),
@@ -391,7 +423,7 @@ class _OptionsPageState extends State<OptionsPage> {
                   }));
                 },
               );
-            case 7:
+            case 8:
               return SwitchListTile(
                   title: const Text('Use Nested Scroll View'),
                   value: useNestedScrollView,
@@ -400,7 +432,7 @@ class _OptionsPageState extends State<OptionsPage> {
                       useNestedScrollView = value;
                     });
                   }));
-            case 8:
+            case 9:
               return ListTile(
                 title: Text(tester),
                 trailing: const Icon(Icons.question_mark),

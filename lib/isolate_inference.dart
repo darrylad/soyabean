@@ -2,7 +2,7 @@
 import 'dart:isolate';
 // import 'dart:math';
 // import 'dart:math';
-import 'dart:typed_data';
+// import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 // import 'package:image/image.dart' as image_lib;
@@ -132,7 +132,7 @@ class InferenceModel {
   CameraImage? cameraImage;
   // image_lib.Image? image;
   // File? image1;
-  Uint8List? image2;
+  List<List<List<List<double>>>> image2;
   int interpreterAddress;
   List<String> labels;
   List<int> inputShape;

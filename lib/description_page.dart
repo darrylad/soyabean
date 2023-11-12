@@ -2,22 +2,27 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-// import 'dart:ui';
-// import 'dart:ui' as ui;
+import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:soyabean/actions_page.dart';
-import 'package:soyabean/imageClassifier.dart';
-// import 'package:soyabean/isolate_inference.dart';
 import 'package:soyabean/main.dart';
-import 'dart:typed_data';
-
+import 'package:soyabean/my_second_thread.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:heif_converter/heif_converter.dart';
+
+// import 'package:soyabean/imageClassifier.dart';
+// import 'dart:typed_data';
+// import 'package:soyabean/isolate_inference.dart';
 
 bool singleThreadedMode = true;
+// String modelPath = 'assets/leaf_disease_model_01.tflite';
+String modelPath = 'assets/leaf_disease_model_02.tflite';
+String classMappingPath = 'assets/class_mapping.json';
+late var resizedImage;
 
 class DescriptionPage extends StatefulWidget {
   final File? image;
@@ -34,7 +39,7 @@ class _DescriptionPageState extends State<DescriptionPage> {
 
   String status = 'Preparing...';
 
-  ImageClassificationHelper? imageClassificationHelper;
+  // ImageClassificationHelper? imageClassificationHelper;
   String? imagePath;
   img.Image? pic;
   Map<String, double>? classification;
@@ -47,14 +52,11 @@ class _DescriptionPageState extends State<DescriptionPage> {
   //   } else {
   //     // Read the bytes of the file.
   //     final bytes = file.readAsBytesSync();
-
   //     // final picImage = img.decodeImage(bytes);
   //     pic = img.decodeImage(bytes);
   //     imagePath = widget.image!.path;
   //   }
-
   //   // Decode the bytes into an img.Image object.
-
   //   // return picImage;
   // }
 
@@ -62,8 +64,8 @@ class _DescriptionPageState extends State<DescriptionPage> {
   void initState() {
     image = widget.image;
     // convertFileToImage(image);
-    imageClassificationHelper = ImageClassificationHelper();
-    imageClassificationHelper!.initHelper();
+    // imageClassificationHelper = ImageClassificationHelper();
+    // imageClassificationHelper!.initHelper();
     super.initState();
     (isDemoModeOn) ? null : processImage();
   }
@@ -117,72 +119,240 @@ class _DescriptionPageState extends State<DescriptionPage> {
   //   return imageUint8List;
   // }
 
-  Future<Uint8List> preprocessImage(File imageFile) async {
-    var imageBytes = await imageFile.readAsBytes();
-    late var inputData;
+  Future<List<List<List<List<double>>>>> preprocessImage(File imageFile) async {
+    // var imageBytes = await imageFile.readAsBytes();
+
+    var imageBytes = imageFile.readAsBytesSync();
+    // late Float32List? inputData;
     final decodedImage = img.decodeImage(imageBytes);
+
+    List<List<List<List<double>>>> imageList = [];
     if (decodedImage != null) {
-      final resizedImage =
-          img.copyResize(decodedImage, width: 150, height: 150);
-      inputData = resizedImage.data?.buffer.asUint8List();
-      for (int i = 0; i < inputData!.length; i++) {
-        // inputData[i] /= 255.0;
-        // inputData[i] = (inputData[i] / 255.0).toDouble();
-        // inputData[i] = (inputData[i] / 255.0);
-        inputData[i] = (inputData[i] ~/ 255);
+      resizedImage = img.copyResize(decodedImage, width: 150, height: 150);
+
+      // Convert the image to a 4D array
+      for (int i = 0; i < 1; i++) {
+        // batch size
+        List<List<List<double>>> row = [];
+        for (int j = 0; j < resizedImage.height; j++) {
+          List<List<double>> pixelRow = [];
+          for (int k = 0; k < resizedImage.width; k++) {
+            pixelRow.add([
+              resizedImage.getPixel(k, j).r / 255.0,
+              resizedImage.getPixel(k, j).g / 255.0,
+              resizedImage.getPixel(k, j).b / 255.0,
+            ]);
+          }
+          row.add(pixelRow);
+        }
+        imageList.add(row);
       }
+
+      return imageList;
+
+      // log(imageList.shape.toString());
+
+      // Float32List createFloatArray(List<List<List<List<double>>>> values,
+      //     {required List<int> shape}) {
+      //   // Ensure the shape matches the provided shape
+      //   if (shape.length != 4) {
+      //     throw ArgumentError('Shape must be of length 4');
+      //   }
+      //   if (shape[0] != values.length ||
+      //       shape[1] != values[0].length ||
+      //       shape[2] != values[0][0].length ||
+      //       shape[3] != values[0][0][0].length) {
+      //     throw ArgumentError(
+      //         'Shape does not match the dimensions of the input values');
+      //   }
+
+      //   // Create the Float32List with the specified shape
+      //   Float32List floatArray =
+      //       Float32List(shape[0] * shape[1] * shape[2] * shape[3]);
+
+      //   // Fill the Float32List with the values
+      //   int index = 0;
+      //   for (int i = 0; i < values.length; i++) {
+      //     for (int j = 0; j < values[i].length; j++) {
+      //       for (int k = 0; k < values[i][j].length; k++) {
+      //         for (int l = 0; l < values[i][j][k].length; l++) {
+      //           floatArray[index++] = values[i][j][k][l];
+      //         }
+      //       }
+      //     }
+      //   }
+
+      //   return floatArray;
+      // }
+
+      // // Convert the 4D array to Float32List
+      // inputData = createFloatArray(imageList, shape: [1, 150, 150, 3]);
+
+      // log(inputData.shape.toString());
     } else {
-      inputData = imageBytes;
+      log('could not decode image. will use heif converter.');
+      log('imageFile.path: ${imageFile.path}');
+
+      String imageFilePath = imageFile.path;
+
+      String? convertedImagePath =
+          await HeifConverter.convert(imageFilePath, format: 'png');
+      log('convertedImagePath: $convertedImagePath');
+
+      File convertedImageFile = File(convertedImagePath!);
+
+      var imageBytes = convertedImageFile.readAsBytesSync();
+      final decodedImage = img.decodeImage(imageBytes);
+
+      List<List<List<List<double>>>> imageList = [];
+
+      if (decodedImage != null) {
+        final resizedImage =
+            img.copyResize(decodedImage, width: 150, height: 150);
+
+        // Convert the image to a 4D array
+        for (int i = 0; i < 1; i++) {
+          // batch size
+          List<List<List<double>>> row = [];
+          for (int j = 0; j < resizedImage.height; j++) {
+            List<List<double>> pixelRow = [];
+            for (int k = 0; k < resizedImage.width; k++) {
+              pixelRow.add([
+                resizedImage.getPixel(k, j).r / 255.0,
+                resizedImage.getPixel(k, j).g / 255.0,
+                resizedImage.getPixel(k, j).b / 255.0,
+              ]);
+            }
+            row.add(pixelRow);
+          }
+          imageList.add(row);
+        }
+      }
+      log(imageList.toString());
+      return imageList;
+
+      // inputData = imageBytes as Float32List?;
     }
 
-    // final inputTensor = Tensor(TfLiteType.float32, [1, 150, 150, 3]);
-    // inputTensor.buffer.asUint8List().setRange(0, inputData.length, inputData);
-
-    // final outputs = Map<int, Object>();
-    // outputs[0] = Tensor(TfLiteType.float32, [1, 5]);
-
-    // Ensure the image data is in the [0, 255] range (like the original code)
-    // imageBytes = imageBytes.map((byte) => (byte ~/ 255).toInt()).toList();
-
-    return Uint8List.fromList(inputData);
+    // return imageList;
   }
 
   late Interpreter interpreter;
 
-  Future<String> runModel(Uint8List inputImageData) async {
+  // Future<String> runModel(Float32List inputImageData) async {
+  Future<String> runModel(List<List<List<List<double>>>> inputImageData) async {
     final interpreterOptions = InterpreterOptions();
-    interpreter = await Interpreter.fromAsset(
-        'assets/leaf_disease_model_01.tflite',
-        options: interpreterOptions);
-    final String classMappingData = await DefaultAssetBundle.of(context)
-        .loadString('assets/class_mapping.json');
+
+    // Use XNNPACK Delegate
+    if (Platform.isAndroid) {
+      interpreterOptions.addDelegate(XNNPackDelegate());
+    }
+
+    // Use GPU Delegate
+    // doesn't work on emulator
+    if (Platform.isAndroid) {
+      interpreterOptions.addDelegate(GpuDelegateV2());
+    }
+
+    // Use Metal Delegate
+    if (Platform.isIOS) {
+      interpreterOptions.addDelegate(GpuDelegate());
+    }
+
+    interpreter =
+        await Interpreter.fromAsset(modelPath, options: interpreterOptions);
+
+    final String classMappingData =
+        await DefaultAssetBundle.of(context).loadString(classMappingPath);
     classMapping = json.decode(classMappingData);
 
-    // final inputImageData = imgInput.data!.buffer.asUint8List();
-    // final outputImageData = List(1 * classMapping!.length);
-    final outputImageData =
-        List<double>.generate(classMapping!.length, (index) => 0);
-
-    // var input = [inputImage];
-    // var output = [
-    //   List<String>.filled(interpreter.getOutputTensors().first.shape[0], "")
-    // ];
-    // var output =
-    //     List<String>.filled(interpreter.getOutputTensors().first.shape[1], "");
+    // Define the shape of the output tensor
+    final outputShape = interpreter.getOutputTensors()[0].shape;
+    // Ensure the outputImageData has the correct shape
+    final List<List<double>> outputImageData = List.generate(outputShape[0],
+        (index) => List<double>.generate(outputShape[1], (index) => 0));
 
     // // Run inference
     interpreter.run(inputImageData, outputImageData);
 
-    final predictedClassIndex = outputImageData
-        .indexOf(outputImageData.reduce((a, b) => a > b ? a : b));
+    // Flatten the output list of lists to a single list
+    List<double> flattenedOutput =
+        outputImageData.expand((list) => list).toList();
+
+    log('original output: ' + outputImageData.toString());
+    log('flattened output: ' + flattenedOutput.toString());
+
+// Find the index of the maximum value in the flattened list
+    final predictedClassIndex = flattenedOutput
+        .indexOf(flattenedOutput.reduce((a, b) => a > b ? a : b));
+
+    // final predictedClassIndex = outputImageData
+    //     .indexOf(outputImageData.reduce((a, b) => a > b ? a : b));
     final predictedClassLabel = classMapping![predictedClassIndex.toString()];
-    log(predictedClassLabel.toString());
+    log('predictedClassLabel : ' + predictedClassLabel.toString());
 
     // final receivedResult = output.first;
     // setState(() {
     //   result = receivedResult[0];
     // });
-    return predictedClassLabel;
+    return predictedClassLabel.toString();
+  }
+
+  void useIsolate(File? image) async {
+    final receivePort = ReceivePort();
+    imagePath = image!.path;
+    // String classMappingPath = 'assets/class_mapping.json';
+
+    // Initialize the interpreter here
+    // Interpreter passInterpreter;
+    // try {
+    //   passInterpreter =
+    //       await Interpreter.fromAsset(modelPath, options: InterpreterOptions());
+    // } catch (e, stackTrace) {
+    //   log('Failed to initialize passInterpreter.',
+    //       error: e, stackTrace: stackTrace);
+    //   return;
+    // }
+
+    var rootToken = RootIsolateToken.instance!;
+    WidgetsFlutterBinding.ensureInitialized();
+
+    await Isolate.spawn(
+      mySecondThread,
+      // [receivePort.sendPort, imagePath, classMappingPath],
+      IsolateData(
+        token: rootToken,
+        sendPort: receivePort.sendPort,
+        imagePath: imagePath,
+        classMappingPath: classMappingPath,
+        // interpreter: passInterpreter,
+      ),
+      debugName: 'mySecondThread',
+    );
+
+    // receivePort.listen((message) {
+    //   setState(() {
+    //     status = 'Completed';
+    //     result = message.toString();
+    //   });
+    // });
+
+    receivePort.listen((message) {
+      setState(() {
+        status = message[0].toString();
+        result = message[1].toString();
+      });
+    });
+    // var response = await receivePort.first;
+    // log('response ' + response.toString());
+  }
+
+  void useSimpleIsolate(File? image) async {
+    var imgArray =
+        await Isolate.run(preprocessImage(image!) as FutureOr Function());
+    result =
+        await Isolate.run(runModel(imgArray) as FutureOr<String> Function());
+    setState(() {});
   }
 
   Future<void> processImage() async {
@@ -207,32 +377,40 @@ class _DescriptionPageState extends State<DescriptionPage> {
       // pic = img.decodeImage(imageData);
       // pic = await decodeImageAsync(imageData);
 
-      preprocessImage(image!).then((imgArray) async {
-        // Now, imgArray contains the preprocessed image data as Uint8List.
-        // You can use it as needed, such as sending it to a model for predictions.
-        setState(() {});
-        // log(imgArray.toString());
-        // classification =
-        //     await imageClassificationHelper?.inferenceImage(imgArray);
+      singleThreadedMode
+          ? preprocessImage(image!).then((imgArray) async {
+              // Now, imgArray contains the preprocessed image data as Uint8List.
+              // You can use it as needed, such as sending it to a model for predictions.
+              setState(() {});
+              // log(imgArray.toString());
+              // classification =
+              //     await imageClassificationHelper?.inferenceImage(imgArray);
 
-        singleThreadedMode
-            ? await runModel(imgArray)
-            : classification =
-                await imageClassificationHelper?.inferenceImage(imgArray);
+              // singleThreadedMode
+              //     ? result = await runModel(imgArray)
+              //     : result =
+              //         (await imageClassificationHelper?.inferenceImage(imgArray))!;
+              result = await runModel(imgArray);
 
-        log(classification.toString());
-        log(result);
+              // log(classification.toString());
+              log(result);
 
-        final entries = classification?.entries;
-        log(entries.toString());
+              if (result != 'Result will be displayed here') {
+                status = 'Completed';
+              }
 
-        if (entries != null) {
-          for (final entry in entries) {
-            result = entry.value.toString();
-          }
-        }
-        setState(() {});
-      });
+              // final entries = classification?.entries;
+              // log(entries.toString());
+
+              // if (entries != null) {
+              //   for (final entry in entries) {
+              //     result = entry.value.toString();
+              //   }
+              // }
+              setState(() {});
+            })
+          : useIsolate(image);
+      // : useSimpleIsolate(image);
 
       // original code
       // setState(() {});
@@ -319,7 +497,16 @@ class _DescriptionPageState extends State<DescriptionPage> {
   void dispose() {
     singleThreadedMode
         ? interpreter.close()
-        : imageClassificationHelper?.close();
+        // : imageClassificationHelper?.close();
+        : null;
+
+    // cleanResult();
+    result = 'Result will be displayed here';
+    status = 'Preparing...';
+    image = null;
+    imagePath = null;
+    pic = null;
+    classification = null;
 
     super.dispose();
   }
@@ -404,7 +591,10 @@ class _DescriptionPageState extends State<DescriptionPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Image.file(widget.image!),
+                        AspectRatio(
+                            aspectRatio: 1.0,
+                            child:
+                                Image.file(widget.image!, fit: BoxFit.cover)),
                         // Image.memory(widget.pic!.getBytes()),
                         const SizedBox(height: 60),
                         Padding(
@@ -438,6 +628,36 @@ class _DescriptionPageState extends State<DescriptionPage> {
             ],
           ),
         ));
+  }
+
+  void resizedImgDialog() {
+    try {
+      Uint8List resizedBytes = img.encodePng(resizedImage);
+      Image myImage = Image.memory(resizedBytes);
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Resized Image'),
+              contentPadding: const EdgeInsets.all(0),
+              content: SizedBox(
+                height: 180,
+                width: 10,
+                child: myImage,
+              ),
+              // actionsPadding: const EdgeInsets.all(2),
+              actions: [
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('OK'))
+              ],
+            );
+          });
+    } catch (e, stackTrace) {
+      log('error: $e , stackTrace: $stackTrace');
+    }
   }
 
   ElevatedButton saveButton(ColorScheme colorScheme) {
@@ -491,11 +711,16 @@ class _DescriptionPageState extends State<DescriptionPage> {
         const Text('RESULT', style: TextStyle(fontSize: 12)),
         Text(result, style: const TextStyle(fontSize: 20)),
         const SizedBox(height: 35),
-        const Text('SERVER URL', style: TextStyle(fontSize: 12)),
-        Text(urlText, style: const TextStyle(fontSize: 20)),
-        const SizedBox(height: 25),
+        // const Text('SERVER URL', style: TextStyle(fontSize: 12)),
+        // Text(urlText, style: const TextStyle(fontSize: 20)),
+        // const SizedBox(height: 25),
         // Image.memory(pic!.data!.buffer.asUint8List()),
         // Image.memory(image!.readAsBytesSync()
+        ElevatedButton(
+            onPressed: () {
+              resizedImgDialog();
+            },
+            child: const Text('Show resized Image')),
       ],
     );
   }
