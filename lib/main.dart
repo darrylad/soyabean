@@ -27,7 +27,8 @@ bool isLightModeForced = false; // stores whether light mode is forced or not
 bool askForUrlEverytime =
     false; // stores whether to ask for url everytime or not
 bool isDemoModeOn = false; // stores whether demo mode is on or not
-
+bool imageCropping = true;
+double croppMultiplyingFactor = 0.7;
 //hive
 // var box = Hive.box('mybox');
 
@@ -73,6 +74,10 @@ void main() async {
     isDemoModeOn = prefs.getBool('isDemoModeOn') ?? false;
 
     singleThreadedMode = prefs.getBool('singleThreadedMode') ?? true;
+
+    imageCropping = prefs.getBool('imageCropping') ?? true;
+
+    croppMultiplyingFactor = prefs.getDouble('croppMultiplyingFactor') ?? 0.7;
 
     // hive
     // urlText = box.get('urlText') ?? 'https://example.com';

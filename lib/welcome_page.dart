@@ -86,11 +86,29 @@ class _WelcomePageState extends State<WelcomePage> {
                       fontSize: 30,
                       fontWeight: FontWeight.w600)),
               const SizedBox(height: 20),
+              // Padding(
+              //   padding: const EdgeInsets.all(30),
+              //   child: Text(
+              //     // 'Nostrud excepteur ea eu elit dolore amet consectetur Ut Lorem fugiat sunt nulla reprehenderit commodo duis nisi reprehenderit esse amet. Ea dolor labore consectetur commodo non deserunt voluptate sunt. Officia consequat et cupidatat amet. \n \nVoluptate sint eiusmod ex dolore aliquip adipisicing nostrud ea sit. Consectetur dolore dolor id ad aliqua do non dolore aliqua. Anim quis pariatur ut aute pariatur consequat laborum ea mollit cillum. \n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
+              //     'Welcome to our AI-powered plant identifier app! Easily classify plant types by uploading images from your gallery or capturing them with your camera. Our powerful AI server analyzes the images for quick and accurate identification, making plant discovery a breeze.\n \nTurn your smartphone into a portable plant encyclopedia with our innovative software. Whether you\'re a seasoned botanist or a nature enthusiast, our app allows you to effortlessly identify and learn about various plant species while exploring the outdoors or tending to your garden. Experience the convenience of on-the-go plant identification with our cutting-edge AI mode. Uncover the mysteries of the botanical world and explore the beauty of the natural realm like never before \n',
+              //     style: TextStyle(
+              //         color: colorScheme.onSurfaceVariant, fontSize: 15),
+              //   ),
+              // ),
+              // Padding(
+              //   padding: const EdgeInsets.all(30),
+              //   child: Text(
+              //     // 'Nostrud excepteur ea eu elit dolore amet consectetur Ut Lorem fugiat sunt nulla reprehenderit commodo duis nisi reprehenderit esse amet. Ea dolor labore consectetur commodo non deserunt voluptate sunt. Officia consequat et cupidatat amet. \n \nVoluptate sint eiusmod ex dolore aliquip adipisicing nostrud ea sit. Consectetur dolore dolor id ad aliqua do non dolore aliqua. Anim quis pariatur ut aute pariatur consequat laborum ea mollit cillum. \n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
+              //     'Introducing our cutting-edge plant identification software with AI mode! This remarkable app allows you to effortlessly classify plant types from images in your gallery or ones freshly captured with your camera. With a simple tap, your photos are sent to our powerful AI server, where the magic happens. Our AI model swiftly analyzes the visual characteristics of the plants, providing you with accurate and instant plant type classification. Explore the natural world like never before and discover the fascinating flora around you with our AI-powered plant identifier. \n \nWith this app, you can turn your smartphone into a portable plant encyclopedia, whether you\'re a seasoned botanist or just someone with a passion for nature. Easily identify and learn about different plant species as you explore the great outdoors or your own garden. The convenience of on-the-go plant identification is now at your fingertips, all thanks to the remarkable capabilities of our AI mode. Embrace the future of plant identification and unlock the mysteries of the botanical world with our innovative software.\n',
+              //     style: TextStyle(
+              //         color: colorScheme.onSurfaceVariant, fontSize: 15),
+              //   ),
+              // ),
               Padding(
                 padding: const EdgeInsets.all(30),
                 child: Text(
                   // 'Nostrud excepteur ea eu elit dolore amet consectetur Ut Lorem fugiat sunt nulla reprehenderit commodo duis nisi reprehenderit esse amet. Ea dolor labore consectetur commodo non deserunt voluptate sunt. Officia consequat et cupidatat amet. \n \nVoluptate sint eiusmod ex dolore aliquip adipisicing nostrud ea sit. Consectetur dolore dolor id ad aliqua do non dolore aliqua. Anim quis pariatur ut aute pariatur consequat laborum ea mollit cillum. \n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
-                  'Welcome to our AI-powered plant identifier app! Easily classify plant types by uploading images from your gallery or capturing them with your camera. Our powerful AI server analyzes the images for quick and accurate identification, making plant discovery a breeze.\n \nTurn your smartphone into a portable plant encyclopedia with our innovative software. Whether you\'re a seasoned botanist or a nature enthusiast, our app allows you to effortlessly identify and learn about various plant species while exploring the outdoors or tending to your garden. Experience the convenience of on-the-go plant identification with our cutting-edge AI mode. Uncover the mysteries of the botanical world and explore the beauty of the natural realm like never before \n',
+                  'Welcome to our leaf health app! 🌿📷 Snap a photo or choose from your gallery, and our user-friendly AI instantly identifies 10 common plant diseases. Say goodbye to manual inspections and unnecessary costs. Whether you\'re a farmer or a plant enthusiast, our app is your pocket-sized plant doctor. Let\'s nurture healthier crops and greener landscapes together! 🌱🤖 #PlantHealthRevolution #SmartFarming\n',
                   style: TextStyle(
                       color: colorScheme.onSurfaceVariant, fontSize: 15),
                 ),

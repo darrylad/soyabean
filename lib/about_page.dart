@@ -80,7 +80,7 @@ class AboutPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(30),
                   child: Text(
-                    'Introducing our cutting-edge plant identification software with AI mode! This remarkable app allows you to effortlessly classify plant types from images in your gallery or ones freshly captured with your camera. With a simple tap, your photos are sent to our powerful AI server, where the magic happens. Our AI model swiftly analyzes the visual characteristics of the plants, providing you with accurate and instant plant type classification. Explore the natural world like never before and discover the fascinating flora around you with our AI-powered plant identifier. \n \nWith this app, you can turn your smartphone into a portable plant encyclopedia, whether you\'re a seasoned botanist or just someone with a passion for nature. Easily identify and learn about different plant species as you explore the great outdoors or your own garden. The convenience of on-the-go plant identification is now at your fingertips, all thanks to the remarkable capabilities of our AI mode. Embrace the future of plant identification and unlock the mysteries of the botanical world with our innovative software.\n \nApp Developed by: Darryl David \n \nThis project is a part of Vishnu Bhaiya\'s BTP which also includes a matlab code havnig an AI model. \n \n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
+                    'Welcome to our leaf health companion app! 🌿📷 Imagine having a personal plant doctor in your pocket! Our user-friendly application is designed to empower farmers and plant enthusiasts alike by effortlessly identifying diseases in plant leaves. Whether you\'re in the field or simply strolling through your garden, our app lets you snap a quick photo or choose one from your gallery to get instant insights into the health of your precious green friends. \n \nGone are the days of manual inspections and unnecessary costs. Our AI model, with its expertise in identifying 10 common plant diseases, is your dedicated partner in ensuring the well-being of your plants. Join us on this journey towards sustainable agriculture and let technology lend a helping hand to both seasoned farmers and budding green thumbs. Together, let\'s nurture healthier crops and greener landscapes! 🌱🤖 #PlantHealthRevolution #SmartFarming\n \nApp Developed by: Darryl David \n \nThis project is a part of Vishnu Bhaiya\'s BTP which also includes a matlab code havnig an AI model. \n \n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
                     style: TextStyle(
                         color: colorScheme.onSurfaceVariant, fontSize: 15),
                   ),
@@ -137,11 +137,20 @@ class AboutPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(30),
                 child: Text(
-                  'Introducing our cutting-edge plant identification software with AI mode! This remarkable app allows you to effortlessly classify plant types from images in your gallery or ones freshly captured with your camera. With a simple tap, your photos are sent to our powerful AI server, where the magic happens. Our AI model swiftly analyzes the visual characteristics of the plants, providing you with accurate and instant plant type classification. Explore the natural world like never before and discover the fascinating flora around you with our AI-powered plant identifier. \n \nWith this app, you can turn your smartphone into a portable plant encyclopedia, whether you\'re a seasoned botanist or just someone with a passion for nature. Easily identify and learn about different plant species as you explore the great outdoors or your own garden. The convenience of on-the-go plant identification is now at your fingertips, all thanks to the remarkable capabilities of our AI mode. Embrace the future of plant identification and unlock the mysteries of the botanical world with our innovative software.\n \n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
+                  'Welcome to our leaf health companion app! 🌿📷 Imagine having a personal plant doctor in your pocket! Our user-friendly application is designed to empower farmers and plant enthusiasts alike by effortlessly identifying diseases in plant leaves. Whether you\'re in the field or simply strolling through your garden, our app lets you snap a quick photo or choose one from your gallery to get instant insights into the health of your precious green friends. \n \nGone are the days of manual inspections and unnecessary costs. Our AI model, with its expertise in identifying 10 common plant diseases, is your dedicated partner in ensuring the well-being of your plants. Join us on this journey towards sustainable agriculture and let technology lend a helping hand to both seasoned farmers and budding green thumbs. Together, let\'s nurture healthier crops and greener landscapes! 🌱🤖 #PlantHealthRevolution #SmartFarming \n',
                   style: TextStyle(
                       color: colorScheme.onSurfaceVariant, fontSize: 15),
                 ),
               ),
+              Padding(
+                padding: const EdgeInsets.all(30),
+                child: Text(
+                  '\n value of meow: $meow \n value of isDynamicColoringEnabled: $isDynamicColoringEnabled \n value of isFirstTime: $isFirstTime \n tester: $tester',
+                  style: TextStyle(
+                      color: colorScheme.onSurfaceVariant, fontSize: 15),
+                ),
+              ),
+
               // const SizedBox(height: 25),
               // Row(
               //   mainAxisSize: MainAxisSize.min,

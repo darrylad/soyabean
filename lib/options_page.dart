@@ -203,6 +203,16 @@ class _OptionsPageState extends State<OptionsPage> {
     await prefs.setBool('singleThreadedMode', value);
   }
 
+  void saveImageCropping(bool value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('imageCropping', value);
+  }
+
+  void saveImageCropFactor(double value) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('croppMultiplyingFactor', value);
+  }
+
   @override
   Widget build(BuildContext context) {
     var colorScheme = Theme.of(context).colorScheme;
@@ -302,6 +312,7 @@ class _OptionsPageState extends State<OptionsPage> {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
+          ColorScheme colorScheme = Theme.of(context).colorScheme;
           switch (index) {
             case 0:
               return IgnorePointer(
@@ -366,6 +377,75 @@ class _OptionsPageState extends State<OptionsPage> {
                     });
                   });
             case 4:
+              return SwitchListTile(
+                  title: const Text('Image Cropping'),
+                  subtitle: const Text(
+                      'Automatically center crops the image by ~ 0.5 times in an attempt to only keep the leaf surface in the image.'),
+                  value: imageCropping,
+                  onChanged: (value) {
+                    setState(() {
+                      imageCropping = value;
+                      saveImageCropping(value);
+                    });
+                  });
+            case 5:
+              return IgnorePointer(
+                ignoring: !imageCropping,
+                child: Opacity(
+                  opacity: imageCropping ? 1.0 : 0.5,
+                  child: ListTile(
+                    title: const Text('Image Crop factor'),
+                    subtitle: const Text(
+                        'Choose how much the image should be cropped'),
+                    // trailing: const Icon(Icons.arrow_forward),
+                    trailing: DropdownButton<double>(
+                      value: croppMultiplyingFactor,
+                      dropdownColor: colorScheme.surfaceVariant,
+                      items: const [
+                        DropdownMenuItem<double>(
+                          value: 0.4,
+                          child: Text('0.4'),
+                        ),
+                        DropdownMenuItem<double>(
+                          value: 0.5,
+                          child: Text('0.5'),
+                        ),
+                        DropdownMenuItem<double>(
+                          value: 0.6,
+                          child: Text('0.6'),
+                        ),
+                        DropdownMenuItem<double>(
+                          value: 0.7,
+                          child: Text('0.7'),
+                        ),
+                        DropdownMenuItem<double>(
+                          value: 0.8,
+                          child: Text('0.8'),
+                        ),
+                        DropdownMenuItem<double>(
+                          value: 0.9,
+                          child: Text('0.9'),
+                        ),
+                        DropdownMenuItem<double>(
+                          value: 1.0,
+                          child: Text('No Zoom (1.0)'),
+                        ),
+                      ],
+                      onChanged: (double? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            croppMultiplyingFactor = newValue;
+                            saveImageCropFactor(newValue);
+                          });
+                        }
+                      },
+                    ),
+                    onTap: () {},
+                  ),
+                ),
+              );
+
+            case 6:
               return IgnorePointer(
                 ignoring: !isServerFeatureAvailable,
                 child: Opacity(
@@ -382,7 +462,7 @@ class _OptionsPageState extends State<OptionsPage> {
                   ),
                 ),
               );
-            case 5:
+            case 7:
               return IgnorePointer(
                 ignoring: !isServerFeatureAvailable,
                 child: Opacity(
@@ -401,7 +481,7 @@ class _OptionsPageState extends State<OptionsPage> {
                   ),
                 ),
               );
-            case 6:
+            case 8:
               return SwitchListTile(
                   title: const Text('Demo mode'),
                   subtitle: const Text('Turns off processing'),
@@ -413,7 +493,7 @@ class _OptionsPageState extends State<OptionsPage> {
                     });
                     saveIsDemoModeOn(value);
                   });
-            case 7:
+            case 9:
               return ListTile(
                 title: const Text('About'),
                 trailing: const Icon(Icons.arrow_forward),
@@ -423,7 +503,7 @@ class _OptionsPageState extends State<OptionsPage> {
                   }));
                 },
               );
-            case 8:
+            case 10:
               return SwitchListTile(
                   title: const Text('Use Nested Scroll View'),
                   value: useNestedScrollView,
@@ -432,7 +512,7 @@ class _OptionsPageState extends State<OptionsPage> {
                       useNestedScrollView = value;
                     });
                   }));
-            case 9:
+            case 11:
               return ListTile(
                 title: Text(tester),
                 trailing: const Icon(Icons.question_mark),
@@ -452,7 +532,7 @@ class _OptionsPageState extends State<OptionsPage> {
           //   // Add your settings widgets here
           // );
         },
-        childCount: 9, // Adjust this count as needed
+        childCount: 11, // Adjust this count as needed
       ),
     );
   }

@@ -23,6 +23,7 @@ bool singleThreadedMode = true;
 String modelPath = 'assets/leaf_disease_model_02.tflite';
 String classMappingPath = 'assets/class_mapping.json';
 late var resizedImage;
+bool isHistoryFeatureAvailable = false;
 
 class DescriptionPage extends StatefulWidget {
   final File? image;
@@ -128,7 +129,46 @@ class _DescriptionPageState extends State<DescriptionPage> {
 
     List<List<List<List<double>>>> imageList = [];
     if (decodedImage != null) {
-      resizedImage = img.copyResize(decodedImage, width: 150, height: 150);
+      // final croppedImage = img.copyCrop(decodedImage,
+      //     x: ((decodedImage.width > decodedImage.height)
+      //         ? (decodedImage.width - decodedImage.height) ~/ 2
+      //         : 0),
+      //     y: ((decodedImage.width > decodedImage.height)
+      //         ? 0
+      //         : (decodedImage.height - decodedImage.width) ~/ 2),
+      //     width: ((decodedImage.width > decodedImage.height)
+      //         ? decodedImage.height
+      //         : decodedImage.width),
+      //     height: ((decodedImage.width > decodedImage.height)
+      //         ? decodedImage.height
+      //         : decodedImage.width));
+
+      void cropImage() {
+        // Calculate the cropping dimensions to make the image square
+        // int cropSize = (decodedImage.width * 0.5).toInt();
+        // int startX = (decodedImage.width - cropSize) ~/ 2;
+        // int startY = (decodedImage.height - cropSize) ~/ 2;
+        int cropSizeHeight =
+            (decodedImage.height * croppMultiplyingFactor).toInt();
+        int cropSizeWidth =
+            (decodedImage.width * croppMultiplyingFactor).toInt();
+        int cropSize =
+            (cropSizeHeight > cropSizeWidth) ? cropSizeWidth : cropSizeHeight;
+        int startX = (decodedImage.width - cropSize) ~/ 2;
+        int startY = (decodedImage.height - cropSize) ~/ 2;
+
+        // Crop the image
+        // Crop the image to make it square
+        final croppedImage = img.copyCrop(decodedImage,
+            x: startX, y: startY, width: cropSize, height: cropSize);
+
+        resizedImage = img.copyResize(croppedImage, width: 150, height: 150);
+      }
+
+      (imageCropping)
+          ? cropImage()
+          : resizedImage =
+              img.copyResize(decodedImage, width: 150, height: 150);
 
       // Convert the image to a 4D array
       for (int i = 0; i < 1; i++) {
@@ -207,8 +247,36 @@ class _DescriptionPageState extends State<DescriptionPage> {
       List<List<List<List<double>>>> imageList = [];
 
       if (decodedImage != null) {
-        final resizedImage =
-            img.copyResize(decodedImage, width: 150, height: 150);
+        void cropImage() {
+          // Calculate the cropping dimensions to make the image square
+          // int cropSize = (decodedImage.width * 0.5).toInt();
+          int cropSizeHeight =
+              (decodedImage.height * croppMultiplyingFactor).toInt();
+          int cropSizeWidth =
+              (decodedImage.width * croppMultiplyingFactor).toInt();
+          int cropSize =
+              (cropSizeHeight > cropSizeWidth) ? cropSizeWidth : cropSizeHeight;
+          int startX = (decodedImage.width - cropSize) ~/ 2;
+          int startY = (decodedImage.height - cropSize) ~/ 2;
+          // int startX = ((decodedImage.width - cropSizeWidth) ~/ 2)
+          //     .clamp(0, decodedImage.width - cropSizeWidth);
+          // int startY = ((decodedImage.height - cropSizeHeight) ~/ 2)
+          //     .clamp(0, decodedImage.height - cropSizeHeight);
+          // int cropSize =
+          //     (cropSizeHeight > cropSizeWidth) ? cropSizeWidth : cropSizeHeight;
+
+          // Crop the image
+          // Crop the image to make it square
+          final croppedImage = img.copyCrop(decodedImage,
+              x: startX, y: startY, width: cropSize, height: cropSize);
+
+          resizedImage = img.copyResize(croppedImage, width: 150, height: 150);
+        }
+
+        (imageCropping)
+            ? cropImage()
+            : resizedImage =
+                img.copyResize(decodedImage, width: 150, height: 150);
 
         // Convert the image to a 4D array
         for (int i = 0; i < 1; i++) {
@@ -228,7 +296,14 @@ class _DescriptionPageState extends State<DescriptionPage> {
           imageList.add(row);
         }
       }
-      log(imageList.toString());
+      // log(imageList.toString());
+      try {
+        log('0 deleting convertedImageFile');
+        convertedImageFile.deleteSync();
+        log('deleting convertedImageFile');
+      } catch (e, stackTrace) {
+        log('error: $e , stackTrace: $stackTrace');
+      }
       return imageList;
 
       // inputData = imageBytes as Float32List?;
@@ -279,8 +354,8 @@ class _DescriptionPageState extends State<DescriptionPage> {
     List<double> flattenedOutput =
         outputImageData.expand((list) => list).toList();
 
-    log('original output: ' + outputImageData.toString());
-    log('flattened output: ' + flattenedOutput.toString());
+    // log('original output: ' + outputImageData.toString());
+    // log('flattened output: ' + flattenedOutput.toString());
 
 // Find the index of the maximum value in the flattened list
     final predictedClassIndex = flattenedOutput
@@ -500,6 +575,9 @@ class _DescriptionPageState extends State<DescriptionPage> {
         // : imageClassificationHelper?.close();
         : null;
 
+    // image?.dispose(); // Dispose of the original image
+    // resizedImage?.dispose(); // Dispose of the resized image
+
     // cleanResult();
     result = 'Result will be displayed here';
     status = 'Preparing...';
@@ -609,20 +687,23 @@ class _DescriptionPageState extends State<DescriptionPage> {
                       ]),
                 ),
               ),
-              SizedBox(
-                height: 80,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Expanded(
-                      child: saveButton(colorScheme),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: deleteButton(colorScheme),
-                    ),
-                  ],
+              Opacity(
+                opacity: isHistoryFeatureAvailable ? 1.0 : 0.5,
+                child: SizedBox(
+                  height: 80,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Expanded(
+                        child: saveButton(colorScheme),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: deleteButton(colorScheme),
+                      ),
+                    ],
+                  ),
                 ),
               )
             ],
@@ -671,7 +752,7 @@ class _DescriptionPageState extends State<DescriptionPage> {
         backgroundColor:
             MaterialStateProperty.all(colorScheme.primaryContainer),
       ),
-      onPressed: () {},
+      onPressed: (isHistoryFeatureAvailable) ? () {} : null,
       child: const SizedBox(height: 50, child: Center(child: Text('Save'))),
     );
   }
