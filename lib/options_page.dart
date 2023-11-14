@@ -339,7 +339,7 @@ class _OptionsPageState extends State<OptionsPage> {
               );
             case 1:
               return SwitchListTile(
-                title: const Text('Show welcome Page'),
+                title: const Text('Show welcome page'),
                 subtitle: const Text('When app is opened'),
                 value: showWelcomePage, // You can set the initial value here
                 onChanged: (bool value) {
@@ -378,9 +378,9 @@ class _OptionsPageState extends State<OptionsPage> {
                   });
             case 4:
               return SwitchListTile(
-                  title: const Text('Image Cropping'),
+                  title: const Text('Image cropping'),
                   subtitle: const Text(
-                      'Automatically center crops the image by ~ 0.5 times in an attempt to only keep the leaf surface in the image.'),
+                      'Automatically center crops the image to a square in an attempt to only keep the leaf surface in the image.'),
                   value: imageCropping,
                   onChanged: (value) {
                     setState(() {
@@ -394,7 +394,7 @@ class _OptionsPageState extends State<OptionsPage> {
                 child: Opacity(
                   opacity: imageCropping ? 1.0 : 0.5,
                   child: ListTile(
-                    title: const Text('Image Crop factor'),
+                    title: const Text('Image crop factor'),
                     subtitle: const Text(
                         'Choose how much the image should be cropped'),
                     // trailing: const Icon(Icons.arrow_forward),
@@ -440,7 +440,7 @@ class _OptionsPageState extends State<OptionsPage> {
                         }
                       },
                     ),
-                    onTap: () {},
+                    // onTap: () {},
                   ),
                 ),
               );

@@ -297,6 +297,63 @@ class _ActionsState extends State<ActionsPage> {
                     : const SizedBox(
                         height: 0,
                       ),
+                (imageCropping)
+                    ? Container(
+                        child: ListTile(
+                          title: const Text('Image crop factor'),
+                          // subtitle: const Text(
+                          //     'Choose how much the image should be cropped'),
+                          // trailing: const Icon(Icons.arrow_forward),
+                          trailing: DropdownButton<double>(
+                            value: croppMultiplyingFactor,
+                            items: const [
+                              DropdownMenuItem<double>(
+                                value: 0.4,
+                                child: Text('0.4'),
+                              ),
+                              DropdownMenuItem<double>(
+                                value: 0.5,
+                                child: Text('0.5'),
+                              ),
+                              DropdownMenuItem<double>(
+                                value: 0.6,
+                                child: Text('0.6'),
+                              ),
+                              DropdownMenuItem<double>(
+                                value: 0.7,
+                                child: Text('0.7'),
+                              ),
+                              DropdownMenuItem<double>(
+                                value: 0.8,
+                                child: Text('0.8'),
+                              ),
+                              DropdownMenuItem<double>(
+                                value: 0.9,
+                                child: Text('0.9'),
+                              ),
+                              DropdownMenuItem<double>(
+                                value: 1.0,
+                                child: Text('No Zoom (1.0)'),
+                              ),
+                            ],
+                            onChanged: (double? newValue) {
+                              if (newValue != null) {
+                                setState(() {
+                                  croppMultiplyingFactor = newValue;
+                                });
+                              }
+                            },
+                          ),
+                          // onTap: () {},
+                        ),
+                      )
+                    : const Opacity(
+                        opacity: 0.6,
+                        child: SizedBox(
+                          // height: 0,
+                          child: Text('Image cropping is off'),
+                        ),
+                      ),
               ],
             ),
           ),
