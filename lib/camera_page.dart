@@ -247,168 +247,170 @@ class _CameraPageState extends State<CameraPage> with WidgetsBindingObserver {
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          content: Padding(
-            padding: const EdgeInsets.fromLTRB(1.0, 10, 1.0, 0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 300,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15),
-                    image: DecorationImage(
-                      image: FileImage(image!),
-                      fit: BoxFit.cover,
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            content: Padding(
+              padding: const EdgeInsets.fromLTRB(1.0, 10, 1.0, 0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 300,
+                    height: 300,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      image: DecorationImage(
+                        image: FileImage(image!),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                (isServerFeatureAvailable)
-                    ? ((askForUrlEverytime)
-                        ? const SizedBox(
-                            height: 0,
-                          )
-                        : InkWell(
-                            onLongPress: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => ShowUrlTextDialog(
-                                            image: image,
-                                            context: context,
-                                          )));
-                            },
-                            child: SizedBox(
-                                height: 30,
-                                child: Center(child: Text('URL: $urlText')))))
-                    : const SizedBox(
-                        height: 0,
-                      ),
-                (imageCropping)
-                    ? Container(
-                        child: ListTile(
-                          title: const Text('Image crop factor'),
-                          // subtitle: const Text(
-                          //     'Choose how much the image should be cropped'),
-                          // trailing: const Icon(Icons.arrow_forward),
-                          trailing: DropdownButton<double>(
-                            value: croppMultiplyingFactor,
-                            items: const [
-                              DropdownMenuItem<double>(
-                                value: 0.4,
-                                child: Text('0.4'),
-                              ),
-                              DropdownMenuItem<double>(
-                                value: 0.5,
-                                child: Text('0.5'),
-                              ),
-                              DropdownMenuItem<double>(
-                                value: 0.6,
-                                child: Text('0.6'),
-                              ),
-                              DropdownMenuItem<double>(
-                                value: 0.7,
-                                child: Text('0.7'),
-                              ),
-                              DropdownMenuItem<double>(
-                                value: 0.8,
-                                child: Text('0.8'),
-                              ),
-                              DropdownMenuItem<double>(
-                                value: 0.9,
-                                child: Text('0.9'),
-                              ),
-                              DropdownMenuItem<double>(
-                                value: 1.0,
-                                child: Text('No Zoom (1.0)'),
-                              ),
-                            ],
-                            onChanged: (double? newValue) {
-                              if (newValue != null) {
-                                setState(() {
-                                  croppMultiplyingFactor = newValue;
-                                });
-                              }
-                            },
-                          ),
-                          // onTap: () {},
-                        ),
-                      )
-                    : const Opacity(
-                        opacity: 0.6,
-                        child: SizedBox(
-                          // height: 0,
-                          child: Text('Image cropping is off'),
-                        ),
-                      ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(
-                        Theme.of(context).colorScheme.primary),
-                    foregroundColor: MaterialStateProperty.all<Color>(
-                        Theme.of(context).colorScheme.onPrimary),
-                    elevation: MaterialStateProperty.all<double>(4),
-                  ),
-                  onPressed: () {
-                    // _displayTextInputDialog(context, image);
-
-                    // final showUrlTextDialog = ShowUrlTextDialog(
-                    //   image: image, // Provide the image parameter.
-                    //   context: context, // Provide the context parameter.
-                    // );
-                    // showUrlTextDialog.callDisplayTextInputDialog(
-                    //     image, context);
-
-                    // displayTextInputDialog(context, image);
-
-                    // ShowUrlTextDialog(image: image, context: context);
-
-                    (askForUrlEverytime)
-                        ? Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ShowUrlTextDialog(
-                                      image: image,
-                                      context: context,
-                                    )))
-                        : Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    DescriptionPage(image: image)));
-                  },
-                  // child: (askForUrlEverytime)
-                  //     ? const Text('Proceed')
-                  //     : const Text('Upload'),
-                  child: (isServerFeatureAvailable)
+                  const SizedBox(height: 10),
+                  (isServerFeatureAvailable)
                       ? ((askForUrlEverytime)
-                          ? const Text('Proceed')
-                          : Text(uploadText))
-                      : const Text('Run'),
-                ),
+                          ? const SizedBox(
+                              height: 0,
+                            )
+                          : InkWell(
+                              onLongPress: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ShowUrlTextDialog(
+                                              image: image,
+                                              context: context,
+                                            )));
+                              },
+                              child: SizedBox(
+                                  height: 30,
+                                  child: Center(child: Text('URL: $urlText')))))
+                      : const SizedBox(
+                          height: 0,
+                        ),
+                  (imageCropping)
+                      ? Container(
+                          child: ListTile(
+                            title: const Text('Image crop factor'),
+                            // subtitle: const Text(
+                            //     'Choose how much the image should be cropped'),
+                            // trailing: const Icon(Icons.arrow_forward),
+                            trailing: DropdownButton<double>(
+                              value: croppMultiplyingFactor,
+                              items: const [
+                                DropdownMenuItem<double>(
+                                  value: 0.4,
+                                  child: Text('0.4'),
+                                ),
+                                DropdownMenuItem<double>(
+                                  value: 0.5,
+                                  child: Text('0.5'),
+                                ),
+                                DropdownMenuItem<double>(
+                                  value: 0.6,
+                                  child: Text('0.6'),
+                                ),
+                                DropdownMenuItem<double>(
+                                  value: 0.7,
+                                  child: Text('0.7'),
+                                ),
+                                DropdownMenuItem<double>(
+                                  value: 0.8,
+                                  child: Text('0.8'),
+                                ),
+                                DropdownMenuItem<double>(
+                                  value: 0.9,
+                                  child: Text('0.9'),
+                                ),
+                                DropdownMenuItem<double>(
+                                  value: 1.0,
+                                  child: Text('No Zoom (1.0)'),
+                                ),
+                              ],
+                              onChanged: (double? newValue) {
+                                if (newValue != null) {
+                                  setState(() {
+                                    croppMultiplyingFactor = newValue;
+                                  });
+                                }
+                              },
+                            ),
+                            // onTap: () {},
+                          ),
+                        )
+                      : const Opacity(
+                          opacity: 0.6,
+                          child: SizedBox(
+                            // height: 0,
+                            child: Text('Image cropping is off'),
+                          ),
+                        ),
+                ],
               ),
-              const SizedBox(width: 18),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    controller!.resumePreview();
-                  },
-                  child: const Text('Cancel'),
+            ),
+            actions: <Widget>[
+              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all<Color>(
+                          Theme.of(context).colorScheme.primary),
+                      foregroundColor: MaterialStateProperty.all<Color>(
+                          Theme.of(context).colorScheme.onPrimary),
+                      elevation: MaterialStateProperty.all<double>(4),
+                    ),
+                    onPressed: () {
+                      // _displayTextInputDialog(context, image);
+
+                      // final showUrlTextDialog = ShowUrlTextDialog(
+                      //   image: image, // Provide the image parameter.
+                      //   context: context, // Provide the context parameter.
+                      // );
+                      // showUrlTextDialog.callDisplayTextInputDialog(
+                      //     image, context);
+
+                      // displayTextInputDialog(context, image);
+
+                      // ShowUrlTextDialog(image: image, context: context);
+
+                      (askForUrlEverytime)
+                          ? Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ShowUrlTextDialog(
+                                        image: image,
+                                        context: context,
+                                      )))
+                          : Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      DescriptionPage(image: image)));
+                    },
+                    // child: (askForUrlEverytime)
+                    //     ? const Text('Proceed')
+                    //     : const Text('Upload'),
+                    child: (isServerFeatureAvailable)
+                        ? ((askForUrlEverytime)
+                            ? const Text('Proceed')
+                            : Text(uploadText))
+                        : const Text('Run'),
+                  ),
                 ),
-              ),
-            ]),
-          ],
-        );
+                const SizedBox(width: 18),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      controller!.resumePreview();
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                ),
+              ]),
+            ],
+          );
+        });
       },
     );
   }
