@@ -5,6 +5,8 @@ The app has algorithms to center square crop images for best results, which is t
 
 To download, go to [releases](https://github.com/darrylad/soyabean/releases). For Android, in Assets, tap on the .apk file.
 
+Or, for Android, [download v0.1.3 here](https://github.com/darrylad/soyabean/releases/download/v0.1-beta.3/app-arm64-v8a-release.apk).
+
 Home:
 
 <img width="250" alt="Main home" src="https://github.com/darrylad/soyabean/assets/132708308/ae9a2643-6fba-4e0a-a19a-c888646b1e76">      <img width="250" alt="Settings" src="https://github.com/darrylad/soyabean/assets/132708308/601a4408-c140-47b3-bb59-f059bf4b3db1">      <img width="250" alt="Zoom menu" src="https://github.com/darrylad/soyabean/assets/132708308/ab3c7c57-519c-430d-b4ec-7914ee10b3e5"> 
