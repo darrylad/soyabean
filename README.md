@@ -10,15 +10,15 @@ Run:
 
 <img width="300" alt="Open Image" src="https://github.com/darrylad/soyabean/assets/132708308/ae0ffd7f-15ae-4366-8bdc-a6bd8d005dae">      <img width="300" alt="Run dialog box" src="https://github.com/darrylad/soyabean/assets/132708308/d53e11aa-cab6-40e1-9444-db89a9d548d5"> 
 
-<img width="300" alt="Open Image" src="https://github.com/darrylad/soyabean/assets/132708308/2892363f-48f8-4b33-b6e7-14393da9b1a8">      <img width="300" alt="Open Image" src="https://github.com/darrylad/soyabean/assets/132708308/1e142238-a884-4e76-b506-ef3a3e187232">
+<img width="300" alt="Descrioption page" src="https://github.com/darrylad/soyabean/assets/132708308/2892363f-48f8-4b33-b6e7-14393da9b1a8">      <img width="300" alt="Resized Image" src="https://github.com/darrylad/soyabean/assets/132708308/1e142238-a884-4e76-b506-ef3a3e187232">
 
 Camera:
 
-<img width="300" alt="Open Image" src="https://github.com/darrylad/soyabean/assets/132708308/4796a420-fefd-4bcf-b6dd-8928917f2d0a">      <img width="300" alt="Open Image" src="https://github.com/darrylad/soyabean/assets/132708308/5cee8faf-3ac6-4591-9a5d-1b7f23dd9f35"> 
+<img width="300" alt="Live camera" src="https://github.com/darrylad/soyabean/assets/132708308/4796a420-fefd-4bcf-b6dd-8928917f2d0a">      <img width="300" alt="Run dialog on camera (which gets paused)" src="https://github.com/darrylad/soyabean/assets/132708308/5cee8faf-3ac6-4591-9a5d-1b7f23dd9f35"> 
 
 Welcome and About:
 
-<img width="300" alt="Open Image" src="https://github.com/darrylad/soyabean/assets/132708308/ba7d51d8-73a8-41e0-8d7a-d342e7dbad82">      <img width="300" alt="Open Image" src="https://github.com/darrylad/soyabean/assets/132708308/f42ac9e6-ed57-40c1-8d26-7e90cdfebb4c">
+<img width="300" alt="Welcome" src="https://github.com/darrylad/soyabean/assets/132708308/ba7d51d8-73a8-41e0-8d7a-d342e7dbad82">      <img width="300" alt="About page" src="https://github.com/darrylad/soyabean/assets/132708308/f42ac9e6-ed57-40c1-8d26-7e90cdfebb4c">
 
 
 
