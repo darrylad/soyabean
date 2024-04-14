@@ -14,9 +14,14 @@ Run:
 
 <img width="300" alt="Descrioption page" src="https://github.com/darrylad/soyabean/assets/132708308/2892363f-48f8-4b33-b6e7-14393da9b1a8">      <img width="300" alt="Resized Image" src="https://github.com/darrylad/soyabean/assets/132708308/1e142238-a884-4e76-b506-ef3a3e187232">
 
+
 Camera:
 
 <img width="300" alt="Live camera" src="https://github.com/darrylad/soyabean/assets/132708308/4796a420-fefd-4bcf-b6dd-8928917f2d0a">      <img width="300" alt="Run dialog on camera (which gets paused)" src="https://github.com/darrylad/soyabean/assets/132708308/5cee8faf-3ac6-4591-9a5d-1b7f23dd9f35"> 
+
+Theme with dynamic themeing off (dynamic theme picks up system colors, for android 12+, uses material you colors pickec from wallpaper:
+<img width="300" alt="Light theme" src="https://github.com/darrylad/soyabean/assets/132708308/8699c235-bc28-4a7b-94d8-fccbed0be57f">   <img width="300" alt="Dark theme" src="https://github.com/darrylad/soyabean/assets/132708308/7936d0b0-84e8-4f40-81cc-d6e81bf3fafd"> 
+
 
 Welcome and About:
 
