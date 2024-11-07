@@ -24,7 +24,7 @@ Camera:
 <img width="250" alt="Live camera" src="https://github.com/darrylad/soyabean/assets/132708308/4796a420-fefd-4bcf-b6dd-8928917f2d0a">      <img width="250" alt="Run dialog on camera (which gets paused)" src="https://github.com/darrylad/soyabean/assets/132708308/5cee8faf-3ac6-4591-9a5d-1b7f23dd9f35"> 
 
 
-Theme with dynamic theming off (dynamic theme picks up system colors, for android 12+, uses material you colors picked from wallpaper:
+Theme with dynamic theming off (dynamic theme picks up system colors, for android 12+, uses material you colors picked from wallpaper):
 
 <img width="250" alt="Light theme" src="https://github.com/darrylad/soyabean/assets/132708308/8699c235-bc28-4a7b-94d8-fccbed0be57f">   <img width="250" alt="Dark theme" src="https://github.com/darrylad/soyabean/assets/132708308/7936d0b0-84e8-4f40-81cc-d6e81bf3fafd">  <img width="250" alt="Settings in dark theme" src="https://github.com/darrylad/soyabean/assets/132708308/a5df4bac-51db-46d2-93f7-ac729b31c99a"> 
 
